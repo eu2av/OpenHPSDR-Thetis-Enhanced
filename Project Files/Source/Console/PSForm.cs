@@ -831,10 +831,7 @@ namespace Thetis
 
         private void chkPSStbl_CheckedChanged(object sender, EventArgs e)
         {
-            if (chkPSStbl.Checked)
-                puresignal.SetPSStabilize(_txachannel, 1);
-            else
-                puresignal.SetPSStabilize(_txachannel, 0);
+            // SetPSStabilize removed in WDSP 2.00; this control is now no-op
         }
 
 
@@ -897,7 +894,7 @@ namespace Thetis
             udPSMoxDelay_ValueChanged(this, e);
             // chkPSRelaxPtol_CheckedChanged removed with WDSP 2.00 (SetPSPtol no longer exists)
             chkPSAutoAttenuate_CheckedChanged(this, e);
-            chkPSStbl_CheckedChanged(this, e);
+            // chkPSStbl_CheckedChanged removed with WDSP 2.00 (SetPSStabilize no longer exists)
             chkPSOnTop_CheckedChanged(this, e);
             chkQuickAttenuate_CheckedChanged(this, e);
             chkShow2ToneMeasurements_CheckedChanged(this, e);
@@ -990,8 +987,7 @@ namespace Thetis
         [DllImport("wdsp.dll", EntryPoint = "SetPSFeedbackRate", CallingConvention = CallingConvention.Cdecl)]
         public static extern void SetPSFeedbackRate(int channel, int rate);
 
-        [DllImport("wdsp.dll", EntryPoint = "SetPSStabilize", CallingConvention = CallingConvention.Cdecl)]
-        public static extern void SetPSStabilize(int channel, int stbl);
+        // SetPSStabilize removed in WDSP 2.00
 
         #endregion
 
