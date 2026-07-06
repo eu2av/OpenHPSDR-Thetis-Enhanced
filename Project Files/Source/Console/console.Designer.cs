@@ -1,4 +1,4 @@
-﻿namespace Thetis
+namespace Thetis
 {
     using System.Windows.Forms;
 
@@ -409,6 +409,7 @@
         private ToolStripMenuItem cWLToolStripMenuItem1;
         private ToolStripMenuItem cWUToolStripMenuItem1;
         private ToolStripMenuItem fMToolStripMenuItem1;
+        private ToolStripMenuItem wbfmToolStripMenuItem1;
         private ToolStripMenuItem filterToolStripMenuItem11;
         private ToolStripMenuItem dSPToolStripMenuItem1;
         private ToolStripMenuItem aMToolStripMenuItem1;

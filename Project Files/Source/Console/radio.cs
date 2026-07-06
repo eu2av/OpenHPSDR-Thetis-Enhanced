@@ -591,7 +591,7 @@ namespace Thetis
 					if(value != dsp_mode_dsp || force)
 					{
                         int wdspMode = (value == DSPMode.WBFM) ? 12 : (int)value;
-                        WDSP.SetRXAMode(WDSP.id(thread, subrx), wdspMode);
+                        WDSP.SetRXAMode(WDSP.id(thread, subrx), (DSPMode)wdspMode);
 						dsp_mode_dsp = value;
 					}
 				}
