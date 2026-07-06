@@ -1,4 +1,4 @@
-﻿/*  PSForm.cs
+/*  PSForm.cs
 
 This file is part of a program that implements a Software-Defined Radio.
 
@@ -804,10 +804,7 @@ namespace Thetis
 
         private void chkPSRelaxPtol_CheckedChanged(object sender, EventArgs e)
         {
-            if (chkPSRelaxPtol.Checked)
-                puresignal.SetPSPtol(_txachannel, 0.400);
-            else
-                puresignal.SetPSPtol(_txachannel, 0.800);
+            // SetPSPtol removed in WDSP 2.00; this control is now no-op
         }
 
         private void chkPSAutoAttenuate_CheckedChanged(object sender, EventArgs e)
@@ -898,7 +895,7 @@ namespace Thetis
             udPSCalWait_ValueChanged(this, e);
             udPSPhnum_ValueChanged(this, e);
             udPSMoxDelay_ValueChanged(this, e);
-            chkPSRelaxPtol_CheckedChanged(this, e);
+            // chkPSRelaxPtol_CheckedChanged removed with WDSP 2.00 (SetPSPtol no longer exists)
             chkPSAutoAttenuate_CheckedChanged(this, e);
             chkPSStbl_CheckedChanged(this, e);
             chkPSOnTop_CheckedChanged(this, e);
@@ -986,9 +983,6 @@ namespace Thetis
 
         [DllImport("wdsp.dll", EntryPoint = "GetPSMaxTX", CallingConvention = CallingConvention.Cdecl)]
         public static extern void GetPSMaxTX(int channel, double* maxtx);
-
-        [DllImport("wdsp.dll", EntryPoint = "SetPSPtol", CallingConvention = CallingConvention.Cdecl)]
-        public static extern void SetPSPtol(int channel, double ptol);
 
         [DllImport("wdsp.dll", EntryPoint = "GetPSDisp", CallingConvention = CallingConvention.Cdecl)]
         public static extern void GetPSDisp(int channel, IntPtr x, IntPtr ym, IntPtr yc, IntPtr ys, IntPtr xm_cor, IntPtr ym_cor, IntPtr xa_cor, IntPtr ya_cor, out int nsamps_out, out int cpts_out, out double phs_ref_deg_out);
