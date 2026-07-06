@@ -1,3 +1,10 @@
+## === Native libraries (keep in repo) ===
+!Project Files/lib/**/*.dll
+!Project Files/lib/**/*.lib
+!Project Files/lib/**/*.exp
+!Project Files/build/**/*.lib
+!Project Files/build/**/*.exp
+
 ## Visual Studio / .NET
 bin/
 obj/
@@ -16,17 +23,10 @@ obj/
 *.log
 *.lastbuildstate
 
-## Build outputs (ignore generated binaries, but keep pre-built .lib for linking)
+## Build outputs (ignore generated binaries)
 Build/
-!Project Files/build/**/*.lib
-!Project Files/build/**/*.exp
 Release/
 Debug/
-
-## Allow native libraries in lib/ (FFTW, SharpDX, SkiaSharp, etc.)
-!Project Files/lib/**/*.dll
-!Project Files/lib/**/*.lib
-!Project Files/lib/**/*.exp
 
 ## NuGet
 packages/
