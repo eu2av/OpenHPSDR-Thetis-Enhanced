@@ -1,6 +1,6 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 18
-VisualStudioVersion = 18.5.11723.231 stable
+VisualStudioVersion = 18.5.11723.231
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Thetis", "Console\Thetis.csproj", "{831AEB2F-CA78-4057-85D7-32B4816ED6AE}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -138,7 +138,6 @@ Global
 		{B3FB4FDC-D517-4C56-872D-9E86627B5A53}.Release|Mixed Platforms.ActiveCfg = Release|x86
 		{B3FB4FDC-D517-4C56-872D-9E86627B5A53}.Release|Mixed Platforms.Build.0 = Release|x86
 		{B3FB4FDC-D517-4C56-872D-9E86627B5A53}.Release|x64.ActiveCfg = Release|x64
-		{B3FB4FDC-D517-4C56-872D-9E86627B5A53}.Release|x64.Build.0 = Release|x64
 		{B3FB4FDC-D517-4C56-872D-9E86627B5A53}.Release|x86.ActiveCfg = Release|x86
 		{0A18A071-125E-442F-AFF7-A3F68ABECF99}.Debug|Any CPU.ActiveCfg = Debug|x64
 		{0A18A071-125E-442F-AFF7-A3F68ABECF99}.Debug|Any CPU.Build.0 = Debug|x64

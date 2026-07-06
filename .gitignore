@@ -4,6 +4,63 @@ obj/
 *.user
 *.suo
 *.cache
+*.exe
+*.pdb
+*.ilk
+*.exp
+*.iobj
+*.ipdb
+*.tlog
+*.log
+*.lastbuildstate
+
+## Build outputs (ignore DLL/LIB from build, but NOT from lib/)
+Build/
+Release/
+Debug/
+x64/
+x86/
+
+## Allow native libraries in lib/ (FFTW, SharpDX, SkiaSharp, etc.)
+!Project Files/lib/**/*.dll
+!Project Files/lib/**/*.lib
+!Project Files/lib/**/*.exp
+
+## NuGet
+packages/
+*.nupkg
+
+## IDE
+.vs/
+.vscode/
+*.csproj.user
+
+## OS
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+## Temporary / backup
+*.tmp
+*.bak
+*.backup
+*.old
+*.orig
+*.rej
+
+## Thetis specific (if any generated)
+*.db
+*.idx
+*.xml.bak
+
+# Keep database.xml as example if present, but ignore local copies
+/database.xml
+*.settings.local
+bin/
+obj/
+*.user
+*.suo
+*.cache
 *.dll
 *.exe
 *.pdb
