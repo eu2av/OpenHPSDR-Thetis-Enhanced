@@ -1,4 +1,4 @@
-﻿/*
+/*
 *
 * Copyright (C) 2010-2018  Doug Wigley 
 * 
@@ -842,8 +842,7 @@ namespace Thetis
         [DllImport("WDSP.dll", CallingConvention = CallingConvention.Cdecl)]
         public static extern void DestroyAnalyzer(int disp);
 
-        [DllImport("WDSP.dll", CallingConvention = CallingConvention.Cdecl)]
-        public static extern void SetPixelRef(int disp, double pixel_ref);
+        // SetPixelRef removed in WDSP 2.00
 
         [DllImport("WDSP.dll", EntryPoint = "GetPixels", CallingConvention = CallingConvention.Cdecl)]
         private static extern void GetPixelsNative(int disp, int pixout, float* pix, ref int flag, out double pixel_ref);
