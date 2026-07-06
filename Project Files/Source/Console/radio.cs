@@ -179,7 +179,7 @@ namespace Thetis
 
             WDSP.destroy_impulse_cache();
 
-            WDSP.RNNRloadModel(""); // this will cause a clear up of a loaded model
+            // WDSP.RNNRloadModel removed in WDSP 2.00
 
             cmaster.StopTCIStreamThreads();
 
@@ -2270,7 +2270,7 @@ namespace Thetis
                 {
                     if (value != rx_nr3_run_dsp || force)
                     {
-                        WDSP.SetRXARNNRRun(WDSP.id(thread, subrx), value);
+                        // WDSP.SetRXARNNRRun removed in WDSP 2.00
                         rx_nr3_run_dsp = value;
                     }
                 }
@@ -2288,7 +2288,7 @@ namespace Thetis
                 {
                     if (value != rx_nr3_position_dsp || force)
                     {
-                        WDSP.SetRXARNNRPosition(WDSP.id(thread, subrx), value);
+                        // WDSP.SetRXARNNRPosition removed in WDSP 2.00
                         rx_nr3_position_dsp = value;
                     }
                 }
@@ -2306,7 +2306,7 @@ namespace Thetis
                 {
                     if (value != rx_nr3_fixed_gain_dsp || force)
                     {
-                        WDSP.SetRXARNNRUseDefaultGain(WDSP.id(thread, subrx), value);
+                        // WDSP.SetRXARNNRUseDefaultGain removed in WDSP 2.00
                         rx_nr3_fixed_gain_dsp = value;
                     }
                 }
@@ -2325,7 +2325,7 @@ namespace Thetis
                 {
                     if (value != rx_nr4_run_dsp || force)
                     {
-                        WDSP.SetRXASBNRRun(WDSP.id(thread, subrx), value);
+                        // WDSP.SetRXASBNRRun removed in WDSP 2.00
                         rx_nr4_run_dsp = value;
                     }
                 }
@@ -2344,7 +2344,7 @@ namespace Thetis
                 {
                     if (value != rx_nr4_position_dsp || force)
                     {
-                        WDSP.SetRXASBNRPosition(WDSP.id(thread, subrx), value);
+                        // WDSP.SetRXASBNRPosition removed in WDSP 2.00
                         rx_nr4_position_dsp = value;
                     }
                 }
@@ -2363,7 +2363,7 @@ namespace Thetis
                 {
                     if (value != rx_nr4_reductionAmount_dsp || force)
                     {
-                        WDSP.SetRXASBNRreductionAmount(WDSP.id(thread, subrx), value);
+                        // WDSP.SetRXASBNRreductionAmount removed in WDSP 2.00
                         rx_nr4_reductionAmount_dsp = value;
                     }
                 }
@@ -2382,7 +2382,7 @@ namespace Thetis
                 {
                     if (value != rx_nr4_smoothingFactor_dsp || force)
                     {
-                        WDSP.SetRXASBNRsmoothingFactor(WDSP.id(thread, subrx), value);
+                        // WDSP.SetRXASBNRsmoothingFactor removed in WDSP 2.00
                         rx_nr4_smoothingFactor_dsp = value;
                     }
                 }
@@ -2401,7 +2401,7 @@ namespace Thetis
                 {
                     if (value != rx_nr4_whiteningFactor_dsp || force)
                     {
-                        WDSP.SetRXASBNRwhiteningFactor(WDSP.id(thread, subrx), value);
+                        // WDSP.SetRXASBNRwhiteningFactor removed in WDSP 2.00
                         rx_nr4_whiteningFactor_dsp = value;
                     }
                 }
@@ -2420,7 +2420,7 @@ namespace Thetis
                 {
                     if (value != rx_nr4_noiseRescale_dsp || force)
                     {
-                        WDSP.SetRXASBNRnoiseRescale(WDSP.id(thread, subrx), value);
+                        // WDSP.SetRXASBNRnoiseRescale removed in WDSP 2.00
                         rx_nr4_noiseRescale_dsp = value;
                     }
                 }
@@ -2439,7 +2439,7 @@ namespace Thetis
                 {
                     if (value != rx_nr4_postFilterThreshold_dsp || force)
                     {
-                        WDSP.SetRXASBNRpostFilterThreshold(WDSP.id(thread, subrx), value);
+                        // WDSP.SetRXASBNRpostFilterThreshold removed in WDSP 2.00
                         rx_nr4_postFilterThreshold_dsp = value;
                     }
                 }
@@ -2458,7 +2458,7 @@ namespace Thetis
                 {
                     if (value != rx_nr4_noiseScalingType_dsp || force)
                     {
-                        WDSP.SetRXASBNRnoiseScalingType(WDSP.id(thread, subrx), value);
+                        // WDSP.SetRXASBNRnoiseScalingType removed in WDSP 2.00
                         rx_nr4_noiseScalingType_dsp = value;
                     }
                 }

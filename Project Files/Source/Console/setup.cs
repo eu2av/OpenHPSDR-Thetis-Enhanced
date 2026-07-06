@@ -35198,7 +35198,7 @@ namespace Thetis
             }
 
             // empty string will use NULL (default) model in rnnoise
-            WDSP.RNNRloadModel(_nr3_model_file);
+            // WDSP.RNNRloadModel removed in WDSP 2.00
         }
 
         //[2.10.3.12]MW0LGE this is a mirror the the rnnoise parse code from parse_lpcnet_weights.c
