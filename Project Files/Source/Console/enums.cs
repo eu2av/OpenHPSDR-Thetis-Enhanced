@@ -273,8 +273,6 @@ namespace Thetis
         AM_USB,
         WBFM,
         LAST,
-        AM_USB,
-        LAST,
     }
 
     public enum Band
