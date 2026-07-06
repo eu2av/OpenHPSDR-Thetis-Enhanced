@@ -11,6 +11,8 @@ obj/
 *.user
 *.suo
 *.cache
+!Project Files/Source/Thetis-Installer/*.exe
+!Skins/*.exe
 *.exe
 *.pdb
 *.ilk
