@@ -1,4 +1,4 @@
-﻿namespace Thetis
+namespace Thetis
 {
     partial class PSForm
     {
@@ -31,14 +31,10 @@
             this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(PSForm));
             this.chkPSOnTop = new System.Windows.Forms.CheckBoxTS();
-            this.lblPSTint = new System.Windows.Forms.LabelTS();
             this.btnPSRestore = new System.Windows.Forms.ButtonTS();
             this.btnPSSave = new System.Windows.Forms.ButtonTS();
             this.btnPSAdvanced = new System.Windows.Forms.ButtonTS();
-            this.comboPSTint = new System.Windows.Forms.ComboBoxTS();
             this.chkPSStbl = new System.Windows.Forms.CheckBoxTS();
-            this.chkPSMap = new System.Windows.Forms.CheckBoxTS();
-            this.chkPSPin = new System.Windows.Forms.CheckBoxTS();
             this.chkPSAutoAttenuate = new System.Windows.Forms.CheckBoxTS();
             this.btnPSAmpView = new System.Windows.Forms.ButtonTS();
             this.chkPSRelaxPtol = new System.Windows.Forms.CheckBoxTS();
@@ -105,17 +101,6 @@
             this.chkPSOnTop.UseVisualStyleBackColor = true;
             this.chkPSOnTop.CheckedChanged += new System.EventHandler(this.chkPSOnTop_CheckedChanged);
             // 
-            // lblPSTint
-            // 
-            this.lblPSTint.AutoSize = true;
-            this.lblPSTint.ForeColor = System.Drawing.Color.White;
-            this.lblPSTint.Image = null;
-            this.lblPSTint.Location = new System.Drawing.Point(431, 130);
-            this.lblPSTint.Name = "lblPSTint";
-            this.lblPSTint.Size = new System.Drawing.Size(54, 13);
-            this.lblPSTint.TabIndex = 47;
-            this.lblPSTint.Text = "TINT (dB)";
-            // 
             // btnPSRestore
             // 
             this.btnPSRestore.BackColor = System.Drawing.SystemColors.Control;
@@ -157,22 +142,6 @@
             this.btnPSAdvanced.UseVisualStyleBackColor = false;
             this.btnPSAdvanced.Click += new System.EventHandler(this.btnPSAdvanced_Click);
             // 
-            // comboPSTint
-            // 
-            this.comboPSTint.ForeColor = System.Drawing.Color.Black;
-            this.comboPSTint.FormattingEnabled = true;
-            this.comboPSTint.Items.AddRange(new object[] {
-            "0.5",
-            "1.1",
-            "2.5"});
-            this.comboPSTint.Location = new System.Drawing.Point(490, 126);
-            this.comboPSTint.Name = "comboPSTint";
-            this.comboPSTint.Size = new System.Drawing.Size(57, 21);
-            this.comboPSTint.TabIndex = 45;
-            this.comboPSTint.Text = "0.5";
-            this.toolTip1.SetToolTip(this.comboPSTint, "FOR EXPERIMENTATION. – LEAVE AT 0.5dB.");
-            this.comboPSTint.SelectedIndexChanged += new System.EventHandler(this.comboPSTint_SelectedIndexChanged);
-            // 
             // chkPSStbl
             // 
             this.chkPSStbl.AutoSize = true;
@@ -186,40 +155,6 @@
             this.toolTip1.SetToolTip(this.chkPSStbl, "Averages multiple collections of calibration samples.");
             this.chkPSStbl.UseVisualStyleBackColor = true;
             this.chkPSStbl.CheckedChanged += new System.EventHandler(this.chkPSStbl_CheckedChanged);
-            // 
-            // chkPSMap
-            // 
-            this.chkPSMap.AutoSize = true;
-            this.chkPSMap.Checked = true;
-            this.chkPSMap.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.chkPSMap.ForeColor = System.Drawing.SystemColors.HighlightText;
-            this.chkPSMap.Image = null;
-            this.chkPSMap.Location = new System.Drawing.Point(434, 85);
-            this.chkPSMap.Name = "chkPSMap";
-            this.chkPSMap.Size = new System.Drawing.Size(49, 17);
-            this.chkPSMap.TabIndex = 43;
-            this.chkPSMap.Text = "MAP";
-            this.toolTip1.SetToolTip(this.chkPSMap, "Optimally re-map the sample collection intervals based upon amplifier characteris" +
-        "tic.  (Recommended)");
-            this.chkPSMap.UseVisualStyleBackColor = true;
-            this.chkPSMap.CheckedChanged += new System.EventHandler(this.chkPSMap_CheckedChanged);
-            // 
-            // chkPSPin
-            // 
-            this.chkPSPin.AutoSize = true;
-            this.chkPSPin.Checked = true;
-            this.chkPSPin.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.chkPSPin.ForeColor = System.Drawing.SystemColors.HighlightText;
-            this.chkPSPin.Image = null;
-            this.chkPSPin.Location = new System.Drawing.Point(434, 62);
-            this.chkPSPin.Name = "chkPSPin";
-            this.chkPSPin.Size = new System.Drawing.Size(44, 17);
-            this.chkPSPin.TabIndex = 42;
-            this.chkPSPin.Text = "PIN";
-            this.toolTip1.SetToolTip(this.chkPSPin, "Manually ‘pin’ the upper-end of the gain curve; compensates for overshoots, etc. " +
-        "(Recommended)");
-            this.chkPSPin.UseVisualStyleBackColor = true;
-            this.chkPSPin.CheckedChanged += new System.EventHandler(this.chkPSPin_CheckedChanged);
             // 
             // chkPSAutoAttenuate
             // 
@@ -867,14 +802,10 @@
             this.Controls.Add(this.chkAdvancedViewHidden);
             this.Controls.Add(this.chkQuickAttenuate);
             this.Controls.Add(this.chkPSOnTop);
-            this.Controls.Add(this.lblPSTint);
             this.Controls.Add(this.btnPSRestore);
             this.Controls.Add(this.btnPSSave);
             this.Controls.Add(this.btnPSAdvanced);
-            this.Controls.Add(this.comboPSTint);
             this.Controls.Add(this.chkPSStbl);
-            this.Controls.Add(this.chkPSMap);
-            this.Controls.Add(this.chkPSPin);
             this.Controls.Add(this.chkPSAutoAttenuate);
             this.Controls.Add(this.btnPSAmpView);
             this.Controls.Add(this.chkPSRelaxPtol);
@@ -953,12 +884,8 @@
         private System.Windows.Forms.LabelTS lblPSInfo6;
         private System.Windows.Forms.LabelTS labelTS7;
         private System.Windows.Forms.CheckBoxTS checkLoopback;
-        private System.Windows.Forms.CheckBoxTS chkPSPin;
-        private System.Windows.Forms.CheckBoxTS chkPSMap;
         private System.Windows.Forms.CheckBoxTS chkPSStbl;
-        private System.Windows.Forms.ComboBoxTS comboPSTint;
         private System.Windows.Forms.ButtonTS btnPSAdvanced;
-        private System.Windows.Forms.LabelTS lblPSTint;
         private System.Windows.Forms.CheckBoxTS chkPSOnTop;
         private System.Windows.Forms.CheckBoxTS chkQuickAttenuate;
         private System.Windows.Forms.ButtonTS btnDefaultPeaks;

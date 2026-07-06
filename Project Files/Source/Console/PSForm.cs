@@ -830,21 +830,7 @@ namespace Thetis
             cmaster.PSLoopback = checkLoopback.Checked;
         }
 
-        private void chkPSPin_CheckedChanged(object sender, EventArgs e)
-        {
-            if (chkPSPin.Checked)
-                puresignal.SetPSPinMode(_txachannel, 1);
-            else
-                puresignal.SetPSPinMode(_txachannel, 0);
-        }
 
-        private void chkPSMap_CheckedChanged(object sender, EventArgs e)
-        {
-            if (chkPSMap.Checked)
-                puresignal.SetPSMapMode(_txachannel, 1);
-            else
-                puresignal.SetPSMapMode(_txachannel, 0);
-        }
 
         private void chkPSStbl_CheckedChanged(object sender, EventArgs e)
         {
@@ -854,36 +840,6 @@ namespace Thetis
                 puresignal.SetPSStabilize(_txachannel, 0);
         }
 
-        private void comboPSTint_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            switch (comboPSTint.SelectedIndex)
-            {
-                case 0:
-                    puresignal.SetPSIntsAndSpi(_txachannel, 16, 256);
-                    _ints = 16;
-                    _spi = 256;
-                    btnPSSave.Enabled = btnPSRestore.Enabled = true;
-                    break;
-                case 1:
-                    puresignal.SetPSIntsAndSpi(_txachannel, 8, 512);
-                    _ints = 8;
-                    _spi = 512;
-                    btnPSSave.Enabled = btnPSRestore.Enabled = false;
-                    break;
-                case 2:
-                    puresignal.SetPSIntsAndSpi(_txachannel, 4, 1024);
-                    _ints = 4;
-                    _spi = 1024;
-                    btnPSSave.Enabled = btnPSRestore.Enabled = false;
-                    break;
-                default:
-                    puresignal.SetPSIntsAndSpi(_txachannel, 16, 256);
-                    _ints = 16;
-                    _spi = 256;
-                    btnPSSave.Enabled = btnPSRestore.Enabled = true;
-                    break;
-            }
-        }
 
         private bool _advancedON = false; //MW0LGE_[2.9.0.7]
         private void btnPSAdvanced_Click(object sender, EventArgs e)
@@ -944,10 +900,7 @@ namespace Thetis
             udPSMoxDelay_ValueChanged(this, e);
             chkPSRelaxPtol_CheckedChanged(this, e);
             chkPSAutoAttenuate_CheckedChanged(this, e);
-            chkPSPin_CheckedChanged(this, e);
-            chkPSMap_CheckedChanged(this, e);
             chkPSStbl_CheckedChanged(this, e);
-            comboPSTint_SelectedIndexChanged(this, e);
             chkPSOnTop_CheckedChanged(this, e);
             chkQuickAttenuate_CheckedChanged(this, e);
             chkShow2ToneMeasurements_CheckedChanged(this, e);
@@ -1038,22 +991,13 @@ namespace Thetis
         public static extern void SetPSPtol(int channel, double ptol);
 
         [DllImport("wdsp.dll", EntryPoint = "GetPSDisp", CallingConvention = CallingConvention.Cdecl)]
-        public static extern void GetPSDisp(int channel, IntPtr x, IntPtr ym, IntPtr yc, IntPtr ys, IntPtr cm, IntPtr cc, IntPtr cs);
+        public static extern void GetPSDisp(int channel, IntPtr x, IntPtr ym, IntPtr yc, IntPtr ys, IntPtr xm_cor, IntPtr ym_cor, IntPtr xa_cor, IntPtr ya_cor, out int nsamps_out, out int cpts_out, out double phs_ref_deg_out);
 
         [DllImport("wdsp.dll", EntryPoint = "SetPSFeedbackRate", CallingConvention = CallingConvention.Cdecl)]
         public static extern void SetPSFeedbackRate(int channel, int rate);
 
-        [DllImport("wdsp.dll", EntryPoint = "SetPSPinMode", CallingConvention = CallingConvention.Cdecl)]
-        public static extern void SetPSPinMode(int channel, int pin);
-
-        [DllImport("wdsp.dll", EntryPoint = "SetPSMapMode", CallingConvention = CallingConvention.Cdecl)]
-        public static extern void SetPSMapMode(int channel, int map);
-
         [DllImport("wdsp.dll", EntryPoint = "SetPSStabilize", CallingConvention = CallingConvention.Cdecl)]
         public static extern void SetPSStabilize(int channel, int stbl);
-
-        [DllImport("wdsp.dll", EntryPoint = "SetPSIntsAndSpi", CallingConvention = CallingConvention.Cdecl)]
-        public static extern void SetPSIntsAndSpi(int channel, int ints, int spi);
 
         #endregion
 

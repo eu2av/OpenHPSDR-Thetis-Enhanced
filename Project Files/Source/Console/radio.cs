@@ -231,6 +231,9 @@ namespace Thetis
                     case DSPMode.FM:
                         rx1_dsp_rate = 192000;
                         break;
+                    case DSPMode.WBFM:
+                        rx1_dsp_rate = 192000;
+                        break;
                     default:
                         rx1_dsp_rate = 48000;
                         break;
@@ -587,7 +590,8 @@ namespace Thetis
 				{
 					if(value != dsp_mode_dsp || force)
 					{
-                        WDSP.SetRXAMode(WDSP.id(thread, subrx), value);
+                        int wdspMode = (value == DSPMode.WBFM) ? 12 : (int)value;
+                        WDSP.SetRXAMode(WDSP.id(thread, subrx), wdspMode);
 						dsp_mode_dsp = value;
 					}
 				}

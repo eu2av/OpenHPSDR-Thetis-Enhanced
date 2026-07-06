@@ -18559,6 +18559,19 @@ namespace Thetis
             WDSP.SetTXAPHROTNstages(WDSP.id(1, 0), (int)udPHROTStages.Value);
         }
 
+        private void chkPHROTAuto_CheckedChanged(object sender, EventArgs e)
+        {
+            if (initializing) return;
+            int auto = chkPHROTAuto.Checked ? 1 : 0;
+            WDSP.SetTXAPHROTAutoMode(WDSP.id(1, 0), auto);
+        }
+
+        private void btnPHROTAutoReset_Click(object sender, EventArgs e)
+        {
+            if (initializing) return;
+            WDSP.SetTXAPHROTAutoReset(WDSP.id(1, 0));
+        }
+
         private void tbCFCPEG_Scroll(object sender, EventArgs e)
         {
             if (initializing) return;

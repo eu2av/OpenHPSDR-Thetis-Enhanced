@@ -1,4 +1,4 @@
-﻿/*  enums.cs
+/*  enums.cs
 
 This file is part of a program that implements a Software-Defined Radio.
 
@@ -270,6 +270,9 @@ namespace Thetis
         SAM,
         DRM,
         AM_LSB,
+        AM_USB,
+        WBFM,
+        LAST,
         AM_USB,
         LAST,
     }

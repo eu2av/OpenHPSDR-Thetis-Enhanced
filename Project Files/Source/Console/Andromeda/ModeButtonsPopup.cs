@@ -395,6 +395,9 @@ namespace Thetis
                 case DSPMode.FM:
                     radBtn6.Checked = true;
                     break;
+                case DSPMode.WBFM:
+                    radBtn6.Checked = true;
+                    break;
                 case DSPMode.AM:
                     radBtn7.Checked = true;
                     break;

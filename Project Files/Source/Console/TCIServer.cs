@@ -4000,6 +4000,9 @@ namespace Thetis
 						case "fm":
 							mode = DSPMode.FM;
 							break;
+						case "wbfm":
+							mode = DSPMode.WBFM;
+							break;
 						case "cw":
                             //change if needed [2.10.3.6]MW0LGE fixes #365
                             bool bChange = false;

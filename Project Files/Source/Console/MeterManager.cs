@@ -18882,6 +18882,7 @@ namespace Thetis
                         case DSPMode.SPEC:
                         case DSPMode.DRM:
                         case DSPMode.FM:
+                        case DSPMode.WBFM:
                         case DSPMode.SAM:
                             low = (int)-bw / 2;
                             high = (int)bw / 2;
@@ -19161,6 +19162,7 @@ namespace Thetis
                             case DSPMode.AM:
                             case DSPMode.SAM:
                             case DSPMode.FM:
+                            case DSPMode.WBFM:
                             case DSPMode.DSB:
                             case DSPMode.DRM:
                             case DSPMode.SPEC:
@@ -19194,6 +19196,7 @@ namespace Thetis
                                 case DSPMode.DRM:
                                 case DSPMode.DSB:
                                 case DSPMode.FM:
+                                case DSPMode.WBFM:
                                 case DSPMode.LSB:
                                 case DSPMode.SAM:
                                 case DSPMode.SPEC:

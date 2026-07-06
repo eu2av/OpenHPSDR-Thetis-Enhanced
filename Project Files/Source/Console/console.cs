@@ -7595,6 +7595,7 @@ namespace Thetis
                     }
                     break;
                 case DSPMode.FM:
+                    case DSPMode.WBFM:
                     int halfBw = (int)(radio.GetDSPRX(0, 0).RXFMDeviation + radio.GetDSPRX(0, 0).RXFMHighCut);  //[2.10.3.4]MW0LGE
                     int bw = ((halfBw * 2) / 1000);
                     low = -halfBw;
@@ -7603,7 +7604,7 @@ namespace Thetis
                     break;
             }
 
-            clampFilterMinMax(1, _rx1_dsp_mode == DSPMode.FM, low, high); // FM clamp the filter ud boxes etc to this new size
+            clampFilterMinMax(1, _rx1_dsp_mode == DSPMode.FM || _rx1_dsp_mode == DSPMode.WBFM, low, high); // FM clamp the filter ud boxes etc to this new size
 
             //MW0LGE_21k9
             ConstrainFilter(ref low, ref high, 1);
@@ -7717,13 +7718,14 @@ namespace Thetis
                     }
                     break;
                 case DSPMode.FM:
+                    case DSPMode.WBFM:
                     int halfBw = (int)(radio.GetDSPRX(1, 0).RXFMDeviation + radio.GetDSPRX(1, 0).RXFMHighCut);  //[2.10.3.4]MW0LGE
                     low = -halfBw;
                     high = halfBw;
                     break;
             }
 
-            clampFilterMinMax(2, _rx2_dsp_mode == DSPMode.FM, low, high); // FM clamp the filter ud boxes etc to this new size
+            clampFilterMinMax(2, _rx2_dsp_mode == DSPMode.FM || _rx2_dsp_mode == DSPMode.WBFM, low, high); // FM clamp the filter ud boxes etc to this new size
 
             //MW0LGE_21k9
             ConstrainFilter(ref low, ref high, 2);
@@ -9674,6 +9676,7 @@ namespace Thetis
                 case DSPMode.CWL:
                 case DSPMode.CWU:
                 case DSPMode.FM:
+                case DSPMode.WBFM:
                 case DSPMode.AM:
                 case DSPMode.SAM:
                     return 0;
@@ -16574,6 +16577,7 @@ namespace Thetis
                 {
                     case DSPMode.DSB:
                     case DSPMode.FM:
+                    case DSPMode.WBFM:
                     case DSPMode.AM:
                     case DSPMode.SAM:
                     case DSPMode.SPEC:
@@ -16593,6 +16597,7 @@ namespace Thetis
                 {
                     case DSPMode.DSB:
                     case DSPMode.FM:
+                    case DSPMode.WBFM:
                     case DSPMode.AM:
                     case DSPMode.SAM:
                     case DSPMode.SPEC:
@@ -17770,6 +17775,7 @@ namespace Thetis
                         r = radModeCWU;
                         break;
                     case DSPMode.FM:
+                        case DSPMode.WBFM:
                         r = radModeFMN;
                         break;
                     case DSPMode.AM:
@@ -17830,6 +17836,7 @@ namespace Thetis
                         r = radRX2ModeCWU;
                         break;
                     case DSPMode.FM:
+                        case DSPMode.WBFM:
                         r = radRX2ModeFMN;
                         break;
                     case DSPMode.AM:
@@ -21941,6 +21948,7 @@ namespace Thetis
                 case DSPMode.AM:
                 case DSPMode.SAM:
                 case DSPMode.FM:
+                    case DSPMode.WBFM:
                     if (chkTUN.Checked && !_display_duplex) freq -= cw_pitch * 1e-6;
                     break;
                 case DSPMode.USB:
@@ -25474,6 +25482,7 @@ namespace Thetis
                     case DSPMode.AM:
                     case DSPMode.SAM:
                     case DSPMode.FM:
+                        case DSPMode.WBFM:
                         picVOX.Invalidate();
                         break;
                 }
@@ -26559,6 +26568,7 @@ namespace Thetis
                             case DSPMode.SAM:
                             case DSPMode.DSB:
                             case DSPMode.FM:
+                            case DSPMode.WBFM:
                             case DSPMode.CWU:
                             case DSPMode.CWL:
                                 UpdateRX1Filters(low + 10, high - 10);
@@ -26686,6 +26696,7 @@ namespace Thetis
                             case DSPMode.SAM:
                             case DSPMode.DSB:
                             case DSPMode.FM:
+                            case DSPMode.WBFM:
                             case DSPMode.CWU:
                             case DSPMode.CWL:
                                 UpdateRX1Filters(low - 10, high + 10);
@@ -26998,6 +27009,7 @@ namespace Thetis
                             RX1DSPMode = DSPMode.FM;
                             break;
                         case DSPMode.FM:
+                            case DSPMode.WBFM:
                             RX1DSPMode = DSPMode.AM;
                             break;
                         case DSPMode.AM:
@@ -27040,6 +27052,7 @@ namespace Thetis
                             RX1DSPMode = DSPMode.CWL;
                             break;
                         case DSPMode.FM:
+                            case DSPMode.WBFM:
                             RX1DSPMode = DSPMode.CWU;
                             break;
                         case DSPMode.AM:
@@ -31626,6 +31639,7 @@ namespace Thetis
                     case DSPMode.AM:
                     case DSPMode.SAM:
                     case DSPMode.FM:
+                    case DSPMode.WBFM:
                     case DSPMode.DSB:
                         if (RX1IsOn60mChannel() && current_region == FRSRegion.US)
                             cwPitchShift = -(long)((ModeFreqOffset(_rx1_dsp_mode) * 1e6) + cw_pitch);
@@ -31914,6 +31928,7 @@ namespace Thetis
                 case DSPMode.AM:
                 case DSPMode.SAM:
                 case DSPMode.FM:
+                    case DSPMode.WBFM:
                     if (chkTUN.Checked) tx_freq -= cw_pitch * 1e-6;
                     break;
                 case DSPMode.USB:
@@ -32246,6 +32261,7 @@ namespace Thetis
                     case DSPMode.AM:
                     case DSPMode.SAM:
                     case DSPMode.FM:
+                    case DSPMode.WBFM:
                     case DSPMode.DSB:
                         Display.VFOASub -= cw_pitch;
                         break;
@@ -32326,6 +32342,7 @@ namespace Thetis
                     case DSPMode.AM:
                     case DSPMode.SAM:
                     case DSPMode.FM:
+                    case DSPMode.WBFM:
                     case DSPMode.USB:
                     case DSPMode.DIGU:
                         if (chkTUN.Checked) freq -= (double)cw_pitch * 1e-6;
@@ -32633,6 +32650,7 @@ namespace Thetis
                         case DSPMode.AM:
                         case DSPMode.SAM:
                         case DSPMode.FM:
+                        case DSPMode.WBFM:
                         case DSPMode.DSB:
                             Display.VFOB -= cw_pitch;
                             break;
@@ -32721,6 +32739,7 @@ namespace Thetis
                         case DSPMode.AM:
                         case DSPMode.SAM:
                         case DSPMode.FM:
+                        case DSPMode.WBFM:
                         case DSPMode.DSB:
                             Display.VFOA -= cw_pitch;
                             Display.VFOASub -= cw_pitch;
@@ -32876,6 +32895,7 @@ namespace Thetis
                 case DSPMode.AM:
                 case DSPMode.SAM:
                 case DSPMode.FM:
+                case DSPMode.WBFM:
                 case DSPMode.USB:
                 case DSPMode.DIGU:
                 case DSPMode.DSB:
@@ -34043,7 +34063,7 @@ namespace Thetis
             WDSP.SetChannelState(WDSP.id(0, 0), 0, 1);
             Thread.Sleep(1);
 
-            if (new_mode == DSPMode.FM)                             // set DSP samplerate
+            if (new_mode == DSPMode.FM || new_mode == DSPMode.WBFM)                             // set DSP samplerate
             {
                 WDSP.SetDSPSamplerate(WDSP.id(0, 0), 192000);
                 WDSP.SetDSPSamplerate(WDSP.id(0, 1), 192000);
@@ -34178,6 +34198,7 @@ namespace Thetis
                     }
                     break;
                 case DSPMode.FM:
+                    case DSPMode.WBFM:
                     radModeFMN.BackColor = SystemColors.Control;
                     if (chkVFOATX.Checked || !rx2_enabled)
                     {
@@ -34423,6 +34444,7 @@ namespace Thetis
 
                     break;
                 case DSPMode.FM:
+                    case DSPMode.WBFM:
                     radModeFMN.BackColor = button_selected_color;
                     DisableAllFilters();
 
@@ -34588,7 +34610,7 @@ namespace Thetis
             {
                 RX1Filter = Filter.NONE;
 
-                if (_rx1_dsp_mode == DSPMode.FM)
+                if (_rx1_dsp_mode == DSPMode.FM || _rx1_dsp_mode == DSPMode.WBFM)
                 {
                     int halfBw = (int)(radio.GetDSPRX(0, 0).RXFMDeviation + radio.GetDSPRX(0, 0).RXFMHighCut); //[2.10.3.4]MW0LGE
                     UpdateRX1Filters(-halfBw, halfBw);
@@ -34612,7 +34634,7 @@ namespace Thetis
                 chkCWAPFEnabled_CheckedChanged(this, EventArgs.Empty);
             }
 
-            if (old_mode == DSPMode.FM || new_mode == DSPMode.FM)
+            if (old_mode == DSPMode.FM || new_mode == DSPMode.FM || new_mode == DSPMode.WBFM)
             {
                 SetupForm.ForceAudioReset();
             }
@@ -34663,6 +34685,7 @@ namespace Thetis
                     comboDigTXProfile_SelectedIndexChanged(this, EventArgs.Empty);
                     break;
                 case DSPMode.FM:
+                    case DSPMode.WBFM:
                     comboFMTXProfile_SelectedIndexChanged(this, EventArgs.Empty);
                     break;
                 case DSPMode.AM:
@@ -35191,6 +35214,7 @@ namespace Thetis
                     }
                     break;
                 case DSPMode.FM:
+                    case DSPMode.WBFM:
                     break;
             }
 
@@ -35208,7 +35232,7 @@ namespace Thetis
         private int _oldFilterShiftCentre = -1;
         private void ptbFilterShift_Scroll(object sender, System.EventArgs e)
         {
-            if (_rx1_dsp_mode == DSPMode.DRM || _rx1_dsp_mode == DSPMode.SPEC || _rx1_dsp_mode == DSPMode.FM) return; // unable to shift in these modes
+            if (_rx1_dsp_mode == DSPMode.DRM || _rx1_dsp_mode == DSPMode.SPEC || _rx1_dsp_mode == DSPMode.FM || _rx1_dsp_mode == DSPMode.WBFM) return; // unable to shift in these modes
 
             _ignore_filter_shift_update = true;
             SelectRX1VarFilter();
@@ -35343,7 +35367,7 @@ namespace Thetis
         }
         private void btnFilterShiftReset_Click(object sender, System.EventArgs e)
         {
-            if (_rx1_dsp_mode == DSPMode.DRM || _rx1_dsp_mode == DSPMode.SPEC || _rx1_dsp_mode == DSPMode.FM) return; // unable to shift in these modes
+            if (_rx1_dsp_mode == DSPMode.DRM || _rx1_dsp_mode == DSPMode.SPEC || _rx1_dsp_mode == DSPMode.FM || _rx1_dsp_mode == DSPMode.WBFM) return; // unable to shift in these modes
 
             ptbFilterShift.Value = 0;
             ptbFilterShift_Scroll(this, EventArgs.Empty);
@@ -35369,6 +35393,7 @@ namespace Thetis
                 case DSPMode.AM:
                 case DSPMode.SAM:
                 case DSPMode.FM:
+                case DSPMode.WBFM:
                 case DSPMode.DSB:
                     bw /= 2;
                     break;
@@ -35401,7 +35426,7 @@ namespace Thetis
 
         private void ptbFilterWidth_Scroll(object sender, System.EventArgs e)
         {
-            if (_rx1_dsp_mode == DSPMode.DRM || _rx1_dsp_mode == DSPMode.SPEC || _rx1_dsp_mode == DSPMode.FM) return; // unable to shift in these modes
+            if (_rx1_dsp_mode == DSPMode.DRM || _rx1_dsp_mode == DSPMode.SPEC || _rx1_dsp_mode == DSPMode.FM || _rx1_dsp_mode == DSPMode.WBFM) return; // unable to shift in these modes
 
             MouseEventArgs mouseEvent = e as MouseEventArgs;
             bool bScrollUp = mouseEvent != null ? mouseEvent.Delta >= 0 : false;
@@ -35439,6 +35464,7 @@ namespace Thetis
             {
                 case DSPMode.DSB:
                 case DSPMode.FM:
+                case DSPMode.WBFM:
                 case DSPMode.AM:
                 case DSPMode.SAM:
                 case DSPMode.SPEC:
@@ -35465,6 +35491,7 @@ namespace Thetis
                 case DSPMode.AM:
                 case DSPMode.SAM:
                 case DSPMode.FM:
+                case DSPMode.WBFM:
                 case DSPMode.DSB:
                     low = current_center - new_bw;
                     high = current_center + new_bw;
@@ -36239,6 +36266,7 @@ namespace Thetis
                 case DSPMode.AM:
                 case DSPMode.SAM:
                 case DSPMode.FM:
+                    case DSPMode.WBFM:
                     delta_hz = peak_hz;
                     break;
             }
@@ -36353,6 +36381,7 @@ namespace Thetis
 
                 case DSPMode.AM:
                 case DSPMode.FM:
+                case DSPMode.WBFM:
                 case DSPMode.DSB:
                 case DSPMode.SAM:
                     is_centered_mode = true;
@@ -37720,7 +37749,7 @@ namespace Thetis
 
             WDSP.SetChannelState(WDSP.id(2, 0), 0, 1);              // turn OFF the DSP channel
 
-            if (new_mode == DSPMode.FM)                             // set DSP samplerate
+            if (new_mode == DSPMode.FM || new_mode == DSPMode.WBFM)                             // set DSP samplerate
                 WDSP.SetDSPSamplerate(WDSP.id(2, 0), 192000);
             else
                 WDSP.SetDSPSamplerate(WDSP.id(2, 0), 48000);
@@ -37824,6 +37853,7 @@ namespace Thetis
                     lblRX2APF.Hide();
                     break;
                 case DSPMode.FM:
+                    case DSPMode.WBFM:
                     radRX2ModeFMN.BackColor = SystemColors.Control;
                     if (rx2_enabled)
                     {
@@ -38010,6 +38040,7 @@ namespace Thetis
 
                     break;
                 case DSPMode.FM:
+                    case DSPMode.WBFM:
                     radRX2ModeFMN.BackColor = button_selected_color;
                     DisableAllRX2Filters();    //this needs to be for RX2 only
                     if (chkRX2NR.CheckState == CheckState.Indeterminate)
@@ -38157,7 +38188,7 @@ namespace Thetis
             {
                 RX2Filter = Filter.NONE;
 
-                if (_rx2_dsp_mode == DSPMode.FM)
+                if (_rx2_dsp_mode == DSPMode.FM || _rx2_dsp_mode == DSPMode.WBFM)
                 {
                     int halfBw = (int)(radio.GetDSPRX(1, 0).RXFMDeviation + radio.GetDSPRX(1, 0).RXFMHighCut); //[2.10.3.4]MW0LGE
                     UpdateRX2Filters(-halfBw, halfBw);
@@ -38185,7 +38216,7 @@ namespace Thetis
             chkRX2Squelch_CheckStateChanged(this, EventArgs.Empty);
             ptbPWR_Scroll(this, EventArgs.Empty);
 
-            if (old_mode == DSPMode.FM || new_mode == DSPMode.FM)
+            if (old_mode == DSPMode.FM || new_mode == DSPMode.FM || new_mode == DSPMode.WBFM)
             {
                 SetupForm.ForceAudioReset();
             }
@@ -38945,6 +38976,7 @@ namespace Thetis
                     filttyperx1 = dsp_filt_type_phone_rx;
                     break;
                 case DSPMode.FM:
+                    case DSPMode.WBFM:
                     bufsizerx1 = dsp_buf_fm_rx;
                     filtsizerx1 = dsp_filt_size_fm_rx;
                     filttyperx1 = dsp_filt_type_fm_rx;
@@ -38976,6 +39008,7 @@ namespace Thetis
                     filttyperx2 = dsp_filt_type_phone_rx;
                     break;
                 case DSPMode.FM:
+                    case DSPMode.WBFM:
                     bufsizerx2 = dsp_buf_fm_rx;
                     filtsizerx2 = dsp_filt_size_fm_rx;
                     filttyperx2 = dsp_filt_type_fm_rx;
@@ -39009,6 +39042,7 @@ namespace Thetis
                     filttypetx = dsp_filt_type_phone_tx;
                     break;
                 case DSPMode.FM:
+                    case DSPMode.WBFM:
                     bufsizetx = dsp_buf_fm_tx;
                     filtsizetx = dsp_filt_size_fm_tx;
                     filttypetx = dsp_filt_type_fm_tx;
@@ -42865,6 +42899,9 @@ namespace Thetis
                 case "FM":
                     radModeFMN.Checked = true;
                     break;
+                case "WBFM":
+                    RX1DSPMode = DSPMode.WBFM;
+                    break;
                 case "AM":
                     radModeAM.Checked = true;
                     break;
@@ -42911,6 +42948,9 @@ namespace Thetis
                     break;
                 case "FM":
                     radRX2ModeFMN.Checked = true;
+                    break;
+                case "WBFM":
+                    RX2DSPMode = DSPMode.WBFM;
                     break;
                 case "AM":
                     radRX2ModeAM.Checked = true;
@@ -47355,7 +47395,7 @@ namespace Thetis
 
             int oldValue = chkSquelch.CheckState == CheckState.Indeterminate ?
                 rx1_voice_squelch_threshold_scroll :
-                (_rx1_dsp_mode == DSPMode.FM ? rx1_fm_squelch_threshold_scroll : rx1_squelch_threshold_scroll);
+                (_rx1_dsp_mode == DSPMode.FM || _rx1_dsp_mode == DSPMode.WBFM ? rx1_fm_squelch_threshold_scroll : rx1_squelch_threshold_scroll);
             int nValue;
 
             switch (chkSquelch.CheckState)
@@ -47364,7 +47404,7 @@ namespace Thetis
                     // off //NOTE: no break here so that the sql threshold values are set, ready for us clicking the sql button
                 case CheckState.Checked:
                     // sql
-                    if (_rx1_dsp_mode == DSPMode.FM) //FM Squelch
+                    if (_rx1_dsp_mode == DSPMode.FM || _rx1_dsp_mode == DSPMode.WBFM) //FM Squelch
                     {
                         //nValue = ptbSquelch.Value; // 0-100
                         //[2.10.3.5]MW0LGE convert to a 0-100 scale from a -160 to 0 scale
@@ -47413,7 +47453,7 @@ namespace Thetis
 
             int newValue = chkSquelch.CheckState == CheckState.Indeterminate ?
                 rx1_voice_squelch_threshold_scroll :
-                (_rx1_dsp_mode == DSPMode.FM ? rx1_fm_squelch_threshold_scroll : rx1_squelch_threshold_scroll);
+                (_rx1_dsp_mode == DSPMode.FM || _rx1_dsp_mode == DSPMode.WBFM ? rx1_fm_squelch_threshold_scroll : rx1_squelch_threshold_scroll);
             if (oldValue != newValue)
                 SQLLevelChangedHandlers?.Invoke(1, oldValue, newValue);
         }
@@ -47436,7 +47476,7 @@ namespace Thetis
                     radio.GetDSPRX(0, 1).RXAMSquelchOn = false;
                     radio.GetDSPRX(0, 0).SSqlOn = false;
                     radio.GetDSPRX(0, 1).SSqlOn = false;
-                    if (_rx1_dsp_mode == DSPMode.FM)
+                    if (_rx1_dsp_mode == DSPMode.FM || _rx1_dsp_mode == DSPMode.WBFM)
                     {
                         _rx1_fm_squelch_state = SquelchState.OFF;
                         bShowLevelBar = false;
@@ -47453,6 +47493,7 @@ namespace Thetis
                     switch (_rx1_dsp_mode)
                     {
                         case DSPMode.FM:
+                            case DSPMode.WBFM:
                             radio.GetDSPRX(0, 0).RXAMSquelchOn = false;
                             radio.GetDSPRX(0, 1).RXAMSquelchOn = false;
                             radio.GetDSPRX(0, 0).SSqlOn = false;
@@ -47483,7 +47524,7 @@ namespace Thetis
                     radio.GetDSPRX(0, 1).RXAMSquelchOn = false;
                     radio.GetDSPRX(0, 0).SSqlOn = true;
                     radio.GetDSPRX(0, 1).SSqlOn = true;
-                    if (_rx1_dsp_mode == DSPMode.FM)
+                    if (_rx1_dsp_mode == DSPMode.FM || _rx1_dsp_mode == DSPMode.WBFM)
                     {
                         _rx1_fm_squelch_state = SquelchState.VSQL;
                     }
@@ -47511,7 +47552,7 @@ namespace Thetis
 
             ptbSquelch_Scroll(this, EventArgs.Empty);
 
-            SquelchState sst = _rx1_dsp_mode == DSPMode.FM ? _rx1_fm_squelch_state : _rx1_squelch_state;
+            SquelchState sst = _rx1_dsp_mode == DSPMode.FM || _rx1_dsp_mode == DSPMode.WBFM ? _rx1_fm_squelch_state : _rx1_squelch_state;
             if (_old_sql_state[0] != sst)
             {
                 SQLChangedHandlers?.Invoke(1, _old_sql_state[0], sst);
@@ -47618,7 +47659,7 @@ namespace Thetis
                     radio.GetDSPRX(1, 1).RXAMSquelchOn = false;
                     radio.GetDSPRX(1, 0).SSqlOn = false;
                     radio.GetDSPRX(1, 1).SSqlOn = false;
-                    if (_rx2_dsp_mode == DSPMode.FM)
+                    if (_rx2_dsp_mode == DSPMode.FM || _rx2_dsp_mode == DSPMode.WBFM)
                     {
                         _rx2_fm_squelch_state = SquelchState.OFF;
                         bShowLevelBar = false;
@@ -47635,6 +47676,7 @@ namespace Thetis
                     switch (_rx2_dsp_mode)
                     {
                         case DSPMode.FM:
+                            case DSPMode.WBFM:
                             radio.GetDSPRX(1, 0).RXAMSquelchOn = false;
                             radio.GetDSPRX(1, 1).RXAMSquelchOn = false;
                             radio.GetDSPRX(1, 0).SSqlOn = false;
@@ -47665,7 +47707,7 @@ namespace Thetis
                     radio.GetDSPRX(1, 1).RXAMSquelchOn = false;
                     radio.GetDSPRX(1, 0).SSqlOn = true;
                     radio.GetDSPRX(1, 1).SSqlOn = true;
-                    if (_rx2_dsp_mode == DSPMode.FM)
+                    if (_rx2_dsp_mode == DSPMode.FM || _rx2_dsp_mode == DSPMode.WBFM)
                     {
                         _rx2_fm_squelch_state = SquelchState.VSQL;
                     }
@@ -47691,7 +47733,7 @@ namespace Thetis
 
             ptbRX2Squelch_Scroll(this, EventArgs.Empty);
 
-            SquelchState sst = _rx2_dsp_mode == DSPMode.FM ? _rx2_fm_squelch_state : _rx2_squelch_state;
+            SquelchState sst = _rx2_dsp_mode == DSPMode.FM || _rx2_dsp_mode == DSPMode.WBFM ? _rx2_fm_squelch_state : _rx2_squelch_state;
             if (_old_sql_state[1] != sst)
             {
                 SQLChangedHandlers?.Invoke(2, _old_sql_state[1], sst);
@@ -47705,7 +47747,7 @@ namespace Thetis
 
             int oldValue = chkRX2Squelch.CheckState == CheckState.Indeterminate ?
                 rx2_voice_squelch_threshold_scroll :
-                (_rx2_dsp_mode == DSPMode.FM ? rx2_fm_squelch_threshold_scroll : rx2_squelch_threshold_scroll);
+                (_rx2_dsp_mode == DSPMode.FM || _rx2_dsp_mode == DSPMode.WBFM ? rx2_fm_squelch_threshold_scroll : rx2_squelch_threshold_scroll);
             int nValue;
 
             switch (chkRX2Squelch.CheckState)
@@ -47714,7 +47756,7 @@ namespace Thetis
                 // off
                 case CheckState.Checked:
                     // sql
-                    if (_rx2_dsp_mode == DSPMode.FM) //FM Squelch
+                    if (_rx2_dsp_mode == DSPMode.FM || _rx2_dsp_mode == DSPMode.WBFM) //FM Squelch
                     {
                         //[2.10.3.5]MW0LGE convert to a 0-100 scale from a -160 to 0 scale
                         nValue = (int)(((ptbRX2Squelch.Value + 160) / 160f) * 100f);
@@ -47762,7 +47804,7 @@ namespace Thetis
 
             int newValue = chkRX2Squelch.CheckState == CheckState.Indeterminate ?
                 rx2_voice_squelch_threshold_scroll :
-                (_rx2_dsp_mode == DSPMode.FM ? rx2_fm_squelch_threshold_scroll : rx2_squelch_threshold_scroll);
+                (_rx2_dsp_mode == DSPMode.FM || _rx2_dsp_mode == DSPMode.WBFM ? rx2_fm_squelch_threshold_scroll : rx2_squelch_threshold_scroll);
             if (oldValue != newValue)
                 SQLLevelChangedHandlers?.Invoke(2, oldValue, newValue);
         }
@@ -48988,7 +49030,7 @@ namespace Thetis
             {
                 if (!_mox) //RX1
                 {
-                    if (_rx1_dsp_mode == DSPMode.FM)
+                    if (_rx1_dsp_mode == DSPMode.FM || _rx1_dsp_mode == DSPMode.WBFM)
                         return;
 
                     if (new_val > ptbSquelch.Maximum) new_val = ptbSquelch.Maximum;
@@ -49579,6 +49621,7 @@ namespace Thetis
                                                     case DSPMode.AM:
                                                     case DSPMode.SAM:
                                                     case DSPMode.FM:
+                                                    case DSPMode.WBFM:
                                                     case DSPMode.DSB:
                                                         tx_high_filter_drag = true;
                                                         break;
@@ -49604,6 +49647,7 @@ namespace Thetis
                                                     case DSPMode.AM:
                                                     case DSPMode.SAM:
                                                     case DSPMode.FM:
+                                                    case DSPMode.WBFM:
                                                     case DSPMode.DSB:
                                                         tx_high_filter_drag = true;
                                                         break;
@@ -50573,7 +50617,7 @@ namespace Thetis
                         }
 
                         bool bOkToChangeRX1 = bOverRX1 && rx1_enabled && !rx1_click_tune_drag && !rx1_spectrum_drag && (_rx1_dsp_mode != DSPMode.DRM && _rx1_dsp_mode != DSPMode.SPEC && _rx1_dsp_mode != DSPMode.FM) && !(_mox && (VFOATX || (RX2Enabled && VFOSplit))); //[2.10.1.0] MW0LGE prevent highlight when MOX
-                        bool bOkToChangeRX2 = bOverRX2 && rx2_enabled && !rx2_click_tune_drag && !rx2_spectrum_drag && (_rx2_dsp_mode != DSPMode.DRM && _rx2_dsp_mode != DSPMode.SPEC && _rx2_dsp_mode != DSPMode.FM) && !(_mox && RX2Enabled && VFOBTX);
+                        bool bOkToChangeRX2 = bOverRX2 && rx2_enabled && !rx2_click_tune_drag && !rx2_spectrum_drag && (_rx2_dsp_mode != DSPMode.DRM && _rx2_dsp_mode != DSPMode.SPEC && _rx2_dsp_mode != DSPMode.FM && _rx2_dsp_mode != DSPMode.WBFM) && !(_mox && RX2Enabled && VFOBTX);
 
                         if (bOkToChangeRX1 || bOkToChangeRX2)
                         {
@@ -50811,6 +50855,7 @@ namespace Thetis
                                     case DSPMode.AM:
                                     case DSPMode.SAM:
                                     case DSPMode.FM:
+                                    case DSPMode.WBFM:
                                     case DSPMode.DSB:
                                         SetupForm.TXFilterHigh = whole_filter_start_high + diff;
                                         break;
@@ -50934,6 +50979,7 @@ namespace Thetis
                         case DSPMode.AM:
                         case DSPMode.SAM:
                         case DSPMode.FM:
+                            case DSPMode.WBFM:
                             break;
                         case DSPMode.USB:
                         case DSPMode.DIGU:
@@ -52215,10 +52261,10 @@ namespace Thetis
             switch (rx)
             {
                 case 1:
-                    handleSqlFM(1, _rx1_dsp_mode == DSPMode.FM, state);
+                    handleSqlFM(1, _rx1_dsp_mode == DSPMode.FM || _rx1_dsp_mode == DSPMode.WBFM, state);
                     return true;
                 case 2:
-                    handleSqlFM(2, _rx2_dsp_mode == DSPMode.FM, state);
+                    handleSqlFM(2, _rx2_dsp_mode == DSPMode.FM || _rx2_dsp_mode == DSPMode.WBFM, state);
                     return true;
                 default:
                     return false;
@@ -52230,9 +52276,9 @@ namespace Thetis
             switch (rx)
             {
                 case 1:
-                    return _rx1_dsp_mode == DSPMode.FM ? _rx1_fm_squelch_state : _rx1_squelch_state;
+                    return _rx1_dsp_mode == DSPMode.FM || _rx1_dsp_mode == DSPMode.WBFM ? _rx1_fm_squelch_state : _rx1_squelch_state;
                 case 2:
-                    return _rx2_dsp_mode == DSPMode.FM ? _rx2_fm_squelch_state : _rx2_squelch_state;
+                    return _rx2_dsp_mode == DSPMode.FM || _rx2_dsp_mode == DSPMode.WBFM ? _rx2_fm_squelch_state : _rx2_squelch_state;
                 default:
                     return SquelchState.OFF;
             }

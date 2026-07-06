@@ -508,6 +508,7 @@ namespace Thetis
 				case DSPMode.DRM:
 				case DSPMode.DSB:
 				case DSPMode.FM:
+				case DSPMode.WBFM:
 				case DSPMode.SAM:
 				case DSPMode.SPEC:
 				case DSPMode.LSB:
@@ -843,6 +844,7 @@ namespace Thetis
 					case DSPMode.DRM:
 					case DSPMode.DSB:
 					case DSPMode.FM:
+					case DSPMode.WBFM:
 					case DSPMode.SAM:
 					case DSPMode.USB:
 						return Frequency2Code(console.RX1FilterHigh,"SH");
@@ -876,6 +878,7 @@ namespace Thetis
 					case DSPMode.DRM:
 					case DSPMode.DSB:
 					case DSPMode.FM:
+					case DSPMode.WBFM:
 					case DSPMode.SAM:
 					case DSPMode.USB:
 						return Frequency2Code(console.RX1FilterLow,"SL");
@@ -3590,6 +3593,7 @@ namespace Thetis
 				case DSPMode.DRM:
 				case DSPMode.DSB:
 				case DSPMode.FM:
+				case DSPMode.WBFM:
 				case DSPMode.SAM:
 				case DSPMode.SPEC:
 				case DSPMode.LSB:
@@ -6411,7 +6415,7 @@ namespace Thetis
 			if(s.Length == parser.nSet)
 			{
 				level = Convert.ToInt32(s);
-				if (console.RX1DSPMode == DSPMode.FM)
+				if (console.RX1DSPMode == DSPMode.FM || console.RX1DSPMode == DSPMode.WBFM)
 				{
 					level = Math.Max(0, level);         // lower bound
 					level = Math.Min(100, level);       // upper bound
@@ -6541,7 +6545,7 @@ namespace Thetis
                 if (s.Length == parser.nSet)
                 {
                     level = Convert.ToInt32(s);
-                    if (console.RX2DSPMode == DSPMode.FM)
+                    if (console.RX2DSPMode == DSPMode.FM || console.RX2DSPMode == DSPMode.WBFM)
                     {
                         level = Math.Max(0, level);			// lower bound
                         level = Math.Min(100, level);		// upper bound
@@ -9473,6 +9477,7 @@ namespace Thetis
 				case DSPMode.DRM:
 				case DSPMode.DSB:
 				case DSPMode.FM:
+				case DSPMode.WBFM:
 				case DSPMode.SAM:
 				switch(n)
 				{
@@ -9520,6 +9525,7 @@ namespace Thetis
 				case DSPMode.DSB:
 				case DSPMode.DRM:
 				case DSPMode.FM:
+				case DSPMode.WBFM:
 				case DSPMode.SAM:
 					mode = "DSB";
 					break;
@@ -9825,6 +9831,7 @@ namespace Thetis
 				case DSPMode.DRM:
 				case DSPMode.DSB:
 				case DSPMode.FM:
+				case DSPMode.WBFM:
 				case DSPMode.SAM:
 					if(n == "SH")
 					{
@@ -9921,6 +9928,7 @@ namespace Thetis
 						retval = "04";	
 						break;
 					case DSPMode.FM:
+						case DSPMode.WBFM:
 						retval = "05";	
 						break;
 					case DSPMode.AM:
@@ -10010,6 +10018,7 @@ namespace Thetis
 					retval = "3";	
 					break;
 				case DSPMode.FM:
+					case DSPMode.WBFM:
 					retval = "4";	
 					break;
 				case DSPMode.AM:

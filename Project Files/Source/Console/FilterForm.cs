@@ -609,6 +609,9 @@ namespace Thetis
 					case DSPMode.FM:
 						comboDSPMode.Text = "FMN";
 						break;
+					case DSPMode.WBFM:
+						comboDSPMode.Text = "WBFM";
+						break;
 					case DSPMode.AM:
 						comboDSPMode.Text = "AM";
 						break;

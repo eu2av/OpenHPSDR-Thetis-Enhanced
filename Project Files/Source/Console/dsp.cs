@@ -375,6 +375,14 @@ namespace Thetis
         [DllImport("wdsp.dll", EntryPoint = "SetRXACTCSSFreq", CallingConvention = CallingConvention.Cdecl)]
         public static extern void SetRXACTCSSFreq(int channel, double freq_hz);
 
+        // WBFM
+        [DllImport("wdsp.dll", EntryPoint = "SetRXAWBFMdmph", CallingConvention = CallingConvention.Cdecl)]
+        public static extern void SetRXAWBFMdmph(int channel, int dmph_run, int dmph_continent);
+
+        [DllImport("wdsp.dll", EntryPoint = "GetRXAWBFMStereoIndicator", CallingConvention = CallingConvention.Cdecl)]
+        public static extern int GetRXAWBFMStereoIndicator(int channel);
+        //
+
         [DllImport("wdsp.dll", EntryPoint = "SetTXALevelerTop", CallingConvention = CallingConvention.Cdecl)]
         public static extern void SetTXALevelerTop(int channel, double maxgain);
 
@@ -783,6 +791,15 @@ namespace Thetis
         [DllImport("wdsp.dll", EntryPoint = "SetTXAPHROTReverse", CallingConvention = CallingConvention.Cdecl)]
         public static extern void SetTXAPHROTReverse(int channel, int reverse);
 
+        [DllImport("wdsp.dll", EntryPoint = "SetTXAPHROTAutoMode", CallingConvention = CallingConvention.Cdecl)]
+        public static extern void SetTXAPHROTAutoMode(int channel, int autoMode);
+
+        [DllImport("wdsp.dll", EntryPoint = "SetTXAPHROTAutoReset", CallingConvention = CallingConvention.Cdecl)]
+        public static extern void SetTXAPHROTAutoReset(int channel);
+
+        [DllImport("wdsp.dll", EntryPoint = "GetTXAPHROTAsymmetry", CallingConvention = CallingConvention.Cdecl)]
+        public static extern void GetTXAPHROTAsymmetry(int channel, double* in_pos, double* in_neg, double* in_ratio, double* out_pos, double* out_neg, double* out_ratio, double* current_fc, double* auto_step);
+
         // TXEQ
         [DllImport("wdsp.dll", EntryPoint = "SetTXAEQProfile", CallingConvention = CallingConvention.Cdecl)]
         public static extern void SetTXAEQProfile(int channel, int nfreqs, double* F, double* G, double* Q);
@@ -790,6 +807,37 @@ namespace Thetis
         // RXEQ
         [DllImport("wdsp.dll", EntryPoint = "SetRXAEQProfile", CallingConvention = CallingConvention.Cdecl)]
         public static extern void SetRXAEQProfile(int channel, int nfreqs, double* F, double* G, double* Q);
+
+        [DllImport("wdsp.dll", EntryPoint = "SetRXAEQCtfmode", CallingConvention = CallingConvention.Cdecl)]
+        public static extern void SetRXAEQCtfmode(int channel, int mode);
+
+        [DllImport("wdsp.dll", EntryPoint = "SetRXAEQWintype", CallingConvention = CallingConvention.Cdecl)]
+        public static extern void SetRXAEQWintype(int channel, int wintype);
+
+        [DllImport("wdsp.dll", EntryPoint = "SetRXAEQCurve", CallingConvention = CallingConvention.Cdecl)]
+        public static extern void SetRXAEQCurve(int channel, int deg, int r, int umethod);
+
+        [DllImport("wdsp.dll", EntryPoint = "SetRXAEQWeights", CallingConvention = CallingConvention.Cdecl)]
+        public static extern void SetRXAEQWeights(int channel, int nfreq, double* weights);
+
+        [DllImport("wdsp.dll", EntryPoint = "GetRXAEQDraw", CallingConvention = CallingConvention.Cdecl)]
+        public static extern void GetRXAEQDraw(int channel, double* X, double* Y);
+
+        // TXEQ
+        [DllImport("wdsp.dll", EntryPoint = "SetTXAEQCtfmode", CallingConvention = CallingConvention.Cdecl)]
+        public static extern void SetTXAEQCtfmode(int channel, int mode);
+
+        [DllImport("wdsp.dll", EntryPoint = "SetTXAEQWintype", CallingConvention = CallingConvention.Cdecl)]
+        public static extern void SetTXAEQWintype(int channel, int wintype);
+
+        [DllImport("wdsp.dll", EntryPoint = "SetTXAEQCurve", CallingConvention = CallingConvention.Cdecl)]
+        public static extern void SetTXAEQCurve(int channel, int deg, int r, int umethod);
+
+        [DllImport("wdsp.dll", EntryPoint = "SetTXAEQWeights", CallingConvention = CallingConvention.Cdecl)]
+        public static extern void SetTXAEQWeights(int channel, int nfreq, double* weights);
+
+        [DllImport("wdsp.dll", EntryPoint = "GetTXAEQDraw", CallingConvention = CallingConvention.Cdecl)]
+        public static extern void GetTXAEQDraw(int channel, double* X, double* Y);
 
         // GetTXACFCOMPGainAndMask
         [DllImport("wdsp.dll", EntryPoint = "GetTXACFCOMPGainAndMask", CallingConvention = CallingConvention.Cdecl)]

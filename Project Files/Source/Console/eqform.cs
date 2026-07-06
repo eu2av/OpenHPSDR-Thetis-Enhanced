@@ -178,6 +178,7 @@ namespace Thetis
         private double[] _tempTX_Q;
         private int _tempTX_BandCount;
         private CheckBoxTS chkLogScale;
+        private NumericUpDownTS udNURBSDegree;
         private bool _paraeq_show_rx;
         #endregion
 
@@ -468,6 +469,7 @@ namespace Thetis
             this.pnlParaEQ2.AutoScrollMargin = new System.Drawing.Size(0, 0);
             this.pnlParaEQ2.AutoScrollMinSize = new System.Drawing.Size(0, 0);
             this.pnlParaEQ2.Controls.Add(this.chkLogScale);
+            this.pnlParaEQ2.Controls.Add(this.udNURBSDegree);
             this.pnlParaEQ2.Controls.Add(this.pbParaEQ_live_warning);
             this.pnlParaEQ2.Controls.Add(this.panelTS1);
             this.pnlParaEQ2.Controls.Add(this.chkUseQFactors);
@@ -492,6 +494,30 @@ namespace Thetis
             this.chkLogScale.Text = "Log scale";
             this.chkLogScale.UseVisualStyleBackColor = true;
             this.chkLogScale.CheckedChanged += new System.EventHandler(this.chkLogScale_CheckedChanged);
+            // 
+            // udNURBSDegree
+            // 
+            this.udNURBSDegree.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.udNURBSDegree.Location = new System.Drawing.Point(39, 26);
+            this.udNURBSDegree.Maximum = new decimal(new int[] {
+            16,
+            0,
+            0,
+            0});
+            this.udNURBSDegree.Minimum = new decimal(new int[] {
+            0,
+            0,
+            0,
+            0});
+            this.udNURBSDegree.Name = "udNURBSDegree";
+            this.udNURBSDegree.Size = new System.Drawing.Size(50, 20);
+            this.udNURBSDegree.TabIndex = 173;
+            this.udNURBSDegree.Value = new decimal(new int[] {
+            0,
+            0,
+            0,
+            0});
+            this.udNURBSDegree.ValueChanged += new System.EventHandler(this.udNURBSDegree_ValueChanged);
             // 
             // panelTS1
             // 
@@ -2855,6 +2881,7 @@ namespace Thetis
             public double RX_Preamp = 0;
             public double RX_minHz = 0;
             public double RX_maxHz = 4000;
+            public int RX_NURBSDegree = 0;
 
             private bool _tx_enabled = false;
             public bool TXenabled
@@ -2874,6 +2901,7 @@ namespace Thetis
             public double TX_Preamp = 0;
             public double TX_minHz = 0;
             public double TX_maxHz = 4000;
+            public int TX_NURBSDegree = 0;
         }
         private ParaEQState _state;
 
@@ -3026,6 +3054,11 @@ namespace Thetis
                     {
                         WDSP.SetRXAEQProfile(WDSP.id(0, 0), nfreqs, Fptr, Gptr, _state.RX_ParametricEQ ? Qptr : null);
                         WDSP.SetRXAEQProfile(WDSP.id(0, 1), nfreqs, Fptr, Gptr, _state.RX_ParametricEQ ? Qptr : null);
+                        if (_state.RX_NURBSDegree >= 0)
+                        {
+                            WDSP.SetRXAEQCurve(WDSP.id(0, 0), _state.RX_NURBSDegree, 0, 0);
+                            WDSP.SetRXAEQCurve(WDSP.id(0, 1), _state.RX_NURBSDegree, 0, 0);
+                        }
                     }
                 }
 
@@ -3068,6 +3101,10 @@ namespace Thetis
                     fixed (double* Fptr = &F[0], Gptr = &G[0], Qptr = &Q[0])
                     {
                         WDSP.SetTXAEQProfile(WDSP.id(1, 0), nfreqs, Fptr, Gptr, _state.TX_ParametricEQ ? Qptr : null);
+                        if (_state.TX_NURBSDegree >= 0)
+                        {
+                            WDSP.SetTXAEQCurve(WDSP.id(1, 0), _state.TX_NURBSDegree, 0, 0);
+                        }
                     }
                 }
 
@@ -3640,6 +3677,21 @@ namespace Thetis
         private void chkLogScale_CheckedChanged(object sender, EventArgs e)
         {
             ucParametricEq1.LogScale = chkLogScale.Checked;
+        }
+
+        private void udNURBSDegree_ValueChanged(object sender, EventArgs e)
+        {
+            if (_initalising) return;
+            int deg = (int)udNURBSDegree.Value;
+            if (_paraeq_show_rx)
+            {
+                _state.RX_NURBSDegree = deg;
+            }
+            else
+            {
+                _state.TX_NURBSDegree = deg;
+            }
+            setupTimer(true);
         }
     }
 }

@@ -2501,7 +2501,7 @@ namespace Thetis
 
             if (show_rx1)
             {
-                if (RX1DSPMode == DSPMode.FM)
+                if (RX1DSPMode == DSPMode.FM || RX1DSPMode == DSPMode.WBFM)
                 {
                     FMSteps += Steps;                       // add the new count
                     Steps = FMSteps / VFMSTEPCOUNT;         // see if enough to move VFO
@@ -2512,7 +2512,7 @@ namespace Thetis
 
             else
             {
-                if (RX2DSPMode == DSPMode.FM)
+                if (RX2DSPMode == DSPMode.FM || RX2DSPMode == DSPMode.WBFM)
                 {
                     FMSteps += Steps;                       // add the new count
                     Steps = FMSteps / VFMSTEPCOUNT;         // see if enough to move VFO
@@ -4202,7 +4202,7 @@ namespace Thetis
                     break;
 
                 case DSPMode.FM:
-                    panelModeSpecificFM.Show();
+                    case DSPMode.WBFM:                    panelModeSpecificFM.Show();
                     panelModeSpecificCW.Hide();
                     panelModeSpecificDigital.Hide();
                     panelModeSpecificPhone.Hide();

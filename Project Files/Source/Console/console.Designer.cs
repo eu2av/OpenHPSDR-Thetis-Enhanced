@@ -377,6 +377,7 @@
         private ToolStripMenuItem cWLToolStripMenuItem;
         private ToolStripMenuItem cWUToolStripMenuItem;
         private ToolStripMenuItem fMToolStripMenuItem;
+        private ToolStripMenuItem wbfmToolStripMenuItem;
         private ToolStripMenuItem aMToolStripMenuItem;
         private ToolStripMenuItem sAMToolStripMenuItem;
         private ToolStripMenuItem sPECToolStripMenuItem;
@@ -785,6 +786,7 @@
             this.cWLToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.cWUToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.fMToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.wbfmToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.aMToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.sAMToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.sPECToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -824,6 +826,7 @@
             this.cWLToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.cWUToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.fMToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
+            this.wbfmToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.aMToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.sAMToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.dIGLToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
@@ -4434,6 +4437,7 @@
             this.cWLToolStripMenuItem,
             this.cWUToolStripMenuItem,
             this.fMToolStripMenuItem,
+            this.wbfmToolStripMenuItem,
             this.aMToolStripMenuItem,
             this.sAMToolStripMenuItem,
             this.sPECToolStripMenuItem,
@@ -4480,6 +4484,12 @@
             this.fMToolStripMenuItem.Name = "fMToolStripMenuItem";
             resources.ApplyResources(this.fMToolStripMenuItem, "fMToolStripMenuItem");
             this.fMToolStripMenuItem.Click += new System.EventHandler(this.mnuMode_Click);
+            // 
+            // wbfmToolStripMenuItem
+            // 
+            this.wbfmToolStripMenuItem.Name = "wbfmToolStripMenuItem";
+            this.wbfmToolStripMenuItem.Text = "WBFM";
+            this.wbfmToolStripMenuItem.Click += new System.EventHandler(this.mnuMode_Click);
             // 
             // aMToolStripMenuItem
             // 
@@ -4713,6 +4723,7 @@
             this.cWLToolStripMenuItem1,
             this.cWUToolStripMenuItem1,
             this.fMToolStripMenuItem1,
+            this.wbfmToolStripMenuItem1,
             this.aMToolStripMenuItem1,
             this.sAMToolStripMenuItem1,
             this.dIGLToolStripMenuItem1,
@@ -4756,6 +4767,12 @@
             this.fMToolStripMenuItem1.Name = "fMToolStripMenuItem1";
             resources.ApplyResources(this.fMToolStripMenuItem1, "fMToolStripMenuItem1");
             this.fMToolStripMenuItem1.Click += new System.EventHandler(this.mnuModeRX2_Click);
+            // 
+            // wbfmToolStripMenuItem1
+            // 
+            this.wbfmToolStripMenuItem1.Name = "wbfmToolStripMenuItem1";
+            this.wbfmToolStripMenuItem1.Text = "WBFM";
+            this.wbfmToolStripMenuItem1.Click += new System.EventHandler(this.mnuModeRX2_Click);
             // 
             // aMToolStripMenuItem1
             // 

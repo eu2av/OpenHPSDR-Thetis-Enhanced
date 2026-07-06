@@ -1,4 +1,4 @@
-﻿/*  AmpView.cs
+/*  AmpView.cs
 
 This file is part of a program that implements a Software-Defined Radio.
 
@@ -76,6 +76,10 @@ namespace Thetis
         double[] cm = new double[4 * max_ints];
         double[] cc = new double[4 * max_ints];
         double[] cs = new double[4 * max_ints];
+        double[] xm_cor = new double[max_samps];
+        double[] ym_cor = new double[max_samps];
+        double[] xa_cor = new double[max_samps];
+        double[] ya_cor = new double[max_samps];
         double[] t  = new double[max_ints + 1];
         int skip = 1;
         bool showgain = false;
@@ -374,9 +378,10 @@ namespace Thetis
                 fixed (double* pym = ym)
                 fixed (double* pyc = yc)
                 fixed (double* pys = ys)
-                fixed (double* pcm = cm)
-                fixed (double* pcc = cc)
-                fixed (double* pcs = cs)
+                fixed (double* pxm_cor = xm_cor)
+                fixed (double* pym_cor = ym_cor)
+                fixed (double* pxa_cor = xa_cor)
+                fixed (double* pya_cor = ya_cor)
                 {
                     puresignal.GetPSDisp(
                         WDSP.id(1, 0),
@@ -384,9 +389,13 @@ namespace Thetis
                         new IntPtr(pym),
                         new IntPtr(pyc),
                         new IntPtr(pys),
-                        new IntPtr(pcm),
-                        new IntPtr(pcc),
-                        new IntPtr(pcs)
+                        new IntPtr(pxm_cor),
+                        new IntPtr(pym_cor),
+                        new IntPtr(pxa_cor),
+                        new IntPtr(pya_cor),
+                        out int nsamps_out,
+                        out int cpts_out,
+                        out double phs_ref_deg_out
                     );
                 }
             }

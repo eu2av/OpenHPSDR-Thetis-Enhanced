@@ -158,6 +158,7 @@ namespace Thetis
             comboboxColumnDSPMode.Items.Add(DSPMode.CWL);
             comboboxColumnDSPMode.Items.Add(DSPMode.CWU);
             comboboxColumnDSPMode.Items.Add(DSPMode.FM);
+            comboboxColumnDSPMode.Items.Add(DSPMode.WBFM);
             comboboxColumnDSPMode.Items.Add(DSPMode.AM);
             comboboxColumnDSPMode.Items.Add(DSPMode.SAM);
             comboboxColumnDSPMode.Items.Add(DSPMode.SPEC);

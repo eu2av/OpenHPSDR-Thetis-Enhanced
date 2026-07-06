@@ -2825,6 +2825,8 @@
             this.lblPHROTFreq = new System.Windows.Forms.LabelTS();
             this.udPhRotFreq = new System.Windows.Forms.NumericUpDownTS();
             this.chkPHROTEnable = new System.Windows.Forms.CheckBoxTS();
+            this.chkPHROTAuto = new System.Windows.Forms.CheckBoxTS();
+            this.btnPHROTAutoReset = new System.Windows.Forms.ButtonTS();
             this.chkCFCPeqEnable = new System.Windows.Forms.CheckBoxTS();
             this.chkCFCEnable = new System.Windows.Forms.CheckBoxTS();
             this.tpTransmit = new System.Windows.Forms.TabPage();
@@ -46287,6 +46289,8 @@
             // grpPhRot
             // 
             this.grpPhRot.Controls.Add(this.chkPHROTReverse);
+            this.grpPhRot.Controls.Add(this.chkPHROTAuto);
+            this.grpPhRot.Controls.Add(this.btnPHROTAutoReset);
             this.grpPhRot.Controls.Add(this.lblPHROTStages);
             this.grpPhRot.Controls.Add(this.udPHROTStages);
             this.grpPhRot.Controls.Add(this.lblPHROTFreq);
@@ -46294,7 +46298,7 @@
             this.grpPhRot.Controls.Add(this.chkPHROTEnable);
             this.grpPhRot.Location = new System.Drawing.Point(513, 264);
             this.grpPhRot.Name = "grpPhRot";
-            this.grpPhRot.Size = new System.Drawing.Size(124, 121);
+            this.grpPhRot.Size = new System.Drawing.Size(124, 165);
             this.grpPhRot.TabIndex = 170;
             this.grpPhRot.TabStop = false;
             this.grpPhRot.Text = "Phase Rotator";
@@ -74738,6 +74742,8 @@
         private LabelTS lblPHROTFreq;
         private NumericUpDownTS udPhRotFreq;
         private CheckBoxTS chkPHROTEnable;
+        private CheckBoxTS chkPHROTAuto;
+        private ButtonTS btnPHROTAutoReset;
         private CheckBoxTS chkCFCPeqEnable;
         private LabelTS lblCFCPRECOMP;
         private LabelTS lblCFCPC15;
