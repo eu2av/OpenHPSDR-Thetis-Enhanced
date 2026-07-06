@@ -288,6 +288,7 @@ namespace Thetis
             this.nudParaEQ_gain = new System.Windows.Forms.NumericUpDownTS();
             this.labelTS3 = new System.Windows.Forms.LabelTS();
             this.nudParaEQ_selected_band = new System.Windows.Forms.NumericUpDownTS();
+            this.udNURBSDegree = new System.Windows.Forms.NumericUpDownTS();
             this.ucParametricEq1 = new Thetis.ucParametricEq();
             this.chkLegacyEQ = new System.Windows.Forms.CheckBoxTS();
             this.pnlLegacyEQ = new System.Windows.Forms.PanelTS();
@@ -364,6 +365,7 @@ namespace Thetis
             ((System.ComponentModel.ISupportInitialize)(this.nudParaEQ_q)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.nudParaEQ_gain)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.nudParaEQ_selected_band)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.udNURBSDegree)).BeginInit();
             this.pnlLegacyEQ.SuspendLayout();
             this.grpTXEQ.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.udTXEQ9)).BeginInit();
@@ -2035,6 +2037,7 @@ namespace Thetis
             ((System.ComponentModel.ISupportInitialize)(this.nudParaEQ_q)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.nudParaEQ_gain)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.nudParaEQ_selected_band)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.udNURBSDegree)).EndInit();
             this.pnlLegacyEQ.ResumeLayout(false);
             this.grpTXEQ.ResumeLayout(false);
             this.grpTXEQ.PerformLayout();
