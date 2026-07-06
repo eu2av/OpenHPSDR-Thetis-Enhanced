@@ -109,17 +109,40 @@ Adds per-device multipliers `PAVoltCal` (AIN3) and `SupplyVoltCal` (AIN6) to cor
 
 ## Building
 
-Requires **Visual Studio 2022** (or VS2026 solution) with .NET Framework / .NET Desktop workload.
+Requires **Visual Studio 2022** (or VS2026 solution) with .NET Framework / .NET Desktop workload + C++ workload (for native DSP projects: wdsp, ChannelMaster, cmASIO, portaudio).
+
+### 1. Clone & open solution
 
 ```bash
-# Open solution
-"Project Files\Source\Thetis.sln"
-
-# Build platform: x64
-# Target framework: .NET (as configured in project)
+# Open solution in Visual Studio
+"Project Files\Source\Thetis_VS2026.sln"
 ```
 
-No additional dependencies beyond stock Thetis.
+### 2. Restore NuGet packages
+
+This project uses **packages.config** (legacy NuGet). Before first build, restore packages:
+
+**In Visual Studio:**
+- Right-click on solution → **Restore NuGet Packages**
+- Or: Tools → NuGet Package Manager → Package Manager Console → run:
+  ```powershell
+  Update-Package -reinstall
+  ```
+
+**From command line (with MSBuild):**
+```bash
+msbuild -t:restore "Project Files\Source\Thetis_VS2026.sln"
+```
+
+> **Note:** If automatic restore fails, check Tools → Options → NuGet Package Manager → **"Allow NuGet to download missing packages"** and **"Automatically check for missing packages during build in Visual Studio"** are enabled.
+
+### 3. Build platform
+
+- Platform: **x64**
+- Configuration: **Release**
+- Target: .NET Framework 4.8
+
+The solution builds C++ projects first (wdsp, ChannelMaster, cmASIO, portaudio), then C# projects (Thetis, Midi2Cat, RawInput). Pre-built `.lib` files are included in the repo for linking.
 
 ---
 
