@@ -29,6 +29,8 @@ Release/
 Debug/
 
 ## NuGet
+*.nupkg
+Project Files/Source/packages/**/*.pdb
 packages/
 *.nupkg
 
