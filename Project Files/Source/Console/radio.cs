@@ -1676,7 +1676,7 @@ namespace Thetis
                 {
                     if (value != rx_cbl_position_dsp || force)
                     {
-                        WDSP.SetRXACBLPosition(WDSP.id(thread, subrx), value);
+                        // WDSP.SetRXACBLPosition removed in WDSP 2.00
                         rx_cbl_position_dsp = value;
                     }
                 }
