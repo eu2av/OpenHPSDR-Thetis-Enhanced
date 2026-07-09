@@ -1,5 +1,6 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<?xml version='1.0' encoding='utf-8'?>
+<!-- Yurij_eu2av: WDSP 2.00 filters updated with new source files -->
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
   <ItemGroup>
     <Filter Include="Source Files">
       <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
@@ -222,7 +223,7 @@
     <ClInclude Include="matchedCW.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-  </ItemGroup>
+  <ClInclude Include="extrapolate.h"><Filter>Header Files</Filter></ClInclude><ClInclude Include="nurbs.h"><Filter>Header Files</Filter></ClInclude><ClInclude Include="nurbs_fit.h"><Filter>Header Files</Filter></ClInclude><ClInclude Include="nurbs_spline.h"><Filter>Header Files</Filter></ClInclude><ClInclude Include="phrot.h"><Filter>Header Files</Filter></ClInclude><ClInclude Include="reshb.h"><Filter>Header Files</Filter></ClInclude><ClInclude Include="wbfm.h"><Filter>Header Files</Filter></ClInclude></ItemGroup>
   <ItemGroup>
     <ClCompile Include="channel.c">
       <Filter>Source Files</Filter>
@@ -428,7 +429,7 @@
     <ClCompile Include="matchedCW.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-  </ItemGroup>
+  <ClCompile Include="extrapolate.c"><Filter>Source Files</Filter></ClCompile><ClCompile Include="nurbs.c"><Filter>Source Files</Filter></ClCompile><ClCompile Include="nurbs_fit.c"><Filter>Source Files</Filter></ClCompile><ClCompile Include="nurbs_spline.c"><Filter>Source Files</Filter></ClCompile><ClCompile Include="phrot.c"><Filter>Source Files</Filter></ClCompile><ClCompile Include="reshb.c"><Filter>Source Files</Filter></ClCompile><ClCompile Include="snoop.c"><Filter>Source Files</Filter></ClCompile><ClCompile Include="wbfm.c"><Filter>Source Files</Filter></ClCompile></ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="wdsp.rc">
       <Filter>Resource Files</Filter>

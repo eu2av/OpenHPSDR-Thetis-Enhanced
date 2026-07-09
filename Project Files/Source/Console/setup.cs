@@ -47,6 +47,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Midi2Cat.IO;
 
+// Yurij_eu2av: Q-factor EQ/CFCOMP call site updates
 namespace Thetis
 {
     using System;
@@ -88,6 +89,14 @@ namespace Thetis
         private bool initializing;
         private CheckBoxTS chkDpiAwareness; // Yurij-eu2av - 2026-07-03: built in CreateDpiAwarenessCheckBox(), registry-backed
         private ButtonTS btnDetCalReset;    // Yurij-eu2av - 2026-07-03: reset Det.Cal. to model defaults
+        // Yurij-eu2av - 2026-07-08: Phase Rotator auto/reset/status controls
+        // built programmatically in InitPhaseRotatorControls() (designer file is unreliable)
+        private CheckBoxTS chkPHROTAuto;
+        private ButtonTS btnPHROTReset;
+        private LabelTS lblPHROTStatus;
+        private LabelTS lblPHROTAsymIn;
+        private LabelTS lblPHROTAsymOut;
+        private LabelTS lblPHROTFc;
         // Yurij-eu2av - 2026-07-03: voltage calibration controls (built in initVoltsAmpsCalibration)
         private NumericUpDownTS udPAVoltCal;
         private NumericUpDownTS udSupplyVoltCal;
@@ -124,6 +133,7 @@ namespace Thetis
             LogTool.AddLogEntry("      Setup init components...", "INITCOMPSETUP");
             InitializeComponent();
             InitDetCalTab(); // Yurij-eu2av - 2026-07-02: build the Det. Cal. tab programmatically
+            InitPhaseRotatorControls(); // Yurij-eu2av - 2026-07-08: build Phase Rotator extras programmatically
 
             _original_pnlP1_adcs_location = pnlP1_adcs.Location;
 
@@ -444,6 +454,12 @@ namespace Thetis
             CreateDpiAwarenessCheckBox();
             updateDpiAwarenessCheckBox();
             InitWaterfallQualityControls();
+
+            // Yurij_eu2av: hardware-specific defaults for PureSignal advanced settings.
+            // Done before getOptions() so a saved user override takes precedence.
+            PSTargetFeedbackLevel = HardwareSpecific.PSTargetFeedbackLevel;
+            PSOutlierEnable = HardwareSpecific.PSOutlierEnableDefault;
+            PSOutlierSigma = HardwareSpecific.PSOutlierSigmaDefault;
 
             LogTool.AddLogEntry("        Setup getting options...", "GETOPTIONS");
             getOptions();
@@ -2824,6 +2840,7 @@ namespace Thetis
             udPhRotFreq_ValueChanged(this, e);
             udPHROTStages_ValueChanged(this, e);
             chkPHROTReverse_CheckedChanged(this, e);
+            chkPHROTAuto_CheckedChanged(this, e);
 
             // TXEQ
             console.EQForm.SetTXProfile();
@@ -3243,6 +3260,7 @@ namespace Thetis
                 if (isTXProfileSettingDifferent<bool>(dr, "CFCPhaseReverseEnabled", chkPHROTReverse.Checked, out sReportOut)) sReport += sReportOut;
                 if (isTXProfileSettingDifferent<int>(dr, "CFCPhaseRotatorFreq", (int)udPhRotFreq.Value, out sReportOut)) sReport += sReportOut;
                 if (isTXProfileSettingDifferent<int>(dr, "CFCPhaseRotatorStages", (int)udPHROTStages.Value, out sReportOut)) sReport += sReportOut;
+                if (isTXProfileSettingDifferent<bool>(dr, "CFCPhaseRotatorAuto", chkPHROTAuto.Checked, out sReportOut)) sReport += sReportOut;
                 int[] cfceq = CFCCOMPEQ;
                 if (isTXProfileSettingDifferent<int>(dr, "CFCPreComp", cfceq[0], out sReportOut)) sReport += sReportOut;
                 for (int i = 1; i < 11; i++)
@@ -3451,6 +3469,7 @@ namespace Thetis
                 if (DB.ConvertFromDBVal<bool>(dr["CFCPhaseReverseEnabled"]) != chkPHROTReverse.Checked) return true;
                 if (DB.ConvertFromDBVal<int>(dr["CFCPhaseRotatorFreq"]) != (int)udPhRotFreq.Value) return true;
                 if (DB.ConvertFromDBVal<int>(dr["CFCPhaseRotatorStages"]) != (int)udPHROTStages.Value) return true;
+                if (DB.ConvertFromDBVal<bool>(dr["CFCPhaseRotatorAuto"]) != chkPHROTAuto.Checked) return true;
                 int[] cfceq = CFCCOMPEQ;
                 if (DB.ConvertFromDBVal<int>(dr["CFCPreComp"]) != cfceq[0]) return true;
                 for (int i = 1; i < 11; i++)
@@ -3610,6 +3629,7 @@ namespace Thetis
             Common.HightlightControl(udPhRotFreq, bHighlight);
             Common.HightlightControl(udPHROTStages, bHighlight);
             Common.HightlightControl(chkPHROTReverse, bHighlight);
+            Common.HightlightControl(chkPHROTAuto, bHighlight);
             CFCConfigForm.HighlightTXProfileSaveItems(bHighlight);
 
             Common.HightlightControl(tbCFCPRECOMP, bHighlight);
@@ -3816,6 +3836,7 @@ namespace Thetis
             dr["CFCPhaseReverseEnabled"] = (bool)chkPHROTReverse.Checked;
             dr["CFCPhaseRotatorFreq"] = (int)udPhRotFreq.Value;
             dr["CFCPhaseRotatorStages"] = (int)udPHROTStages.Value;
+            dr["CFCPhaseRotatorAuto"] = (bool)chkPHROTAuto.Checked;
             int[] cfceq = CFCCOMPEQ;
             dr["CFCPreComp"] = cfceq[0];
             for (int i = 1; i < 11; i++)
@@ -4047,6 +4068,55 @@ namespace Thetis
                         udATTOnTX_ValueChanged(this, EventArgs.Empty);
                     else
                         udATTOnTX.Value = value;
+                }
+            }
+        }
+
+        public int PSTargetFeedbackLevel
+        {
+            get
+            {
+                if (udPSTargetFeedbackLevel != null) return (int)udPSTargetFeedbackLevel.Value;
+                else return HardwareSpecific.PSTargetFeedbackLevel;
+            }
+            set
+            {
+                if (udPSTargetFeedbackLevel != null)
+                {
+                    if (value > (int)udPSTargetFeedbackLevel.Maximum) value = (int)udPSTargetFeedbackLevel.Maximum;
+                    if (value < (int)udPSTargetFeedbackLevel.Minimum) value = (int)udPSTargetFeedbackLevel.Minimum;
+                    udPSTargetFeedbackLevel.Value = value;
+                }
+            }
+        }
+
+        public bool PSOutlierEnable
+        {
+            get
+            {
+                if (chkPSOutlierEnable != null) return chkPSOutlierEnable.Checked;
+                else return HardwareSpecific.PSOutlierEnableDefault;
+            }
+            set
+            {
+                if (chkPSOutlierEnable != null) chkPSOutlierEnable.Checked = value;
+            }
+        }
+
+        public double PSOutlierSigma
+        {
+            get
+            {
+                if (udPSOutlierSigma != null) return (double)udPSOutlierSigma.Value;
+                else return HardwareSpecific.PSOutlierSigmaDefault;
+            }
+            set
+            {
+                if (udPSOutlierSigma != null)
+                {
+                    if (value > (double)udPSOutlierSigma.Maximum) value = (double)udPSOutlierSigma.Maximum;
+                    if (value < (double)udPSOutlierSigma.Minimum) value = (double)udPSOutlierSigma.Minimum;
+                    udPSOutlierSigma.Value = (decimal)value;
                 }
             }
         }
@@ -4429,6 +4499,20 @@ namespace Thetis
                 if (chkPHROTEnable != null)
                 {
                     chkPHROTEnable.Checked = value;
+                }
+            }
+        }
+        public bool PhaseRotAuto
+        {
+            get
+            {
+                return chkPHROTAuto != null && chkPHROTAuto.Checked;
+            }
+            set
+            {
+                if (chkPHROTAuto != null)
+                {
+                    chkPHROTAuto.Checked = value;
                 }
             }
         }
@@ -9545,6 +9629,7 @@ namespace Thetis
 
             udPhRotFreq.Value = Math.Min(Math.Max((int)dr["CFCPhaseRotatorFreq"], udPhRotFreq.Minimum), udPhRotFreq.Maximum);
             udPHROTStages.Value = Math.Min(Math.Max((int)dr["CFCPhaseRotatorStages"], udPHROTStages.Minimum), udPHROTStages.Maximum);
+            chkPHROTAuto.Checked = (bool)dr["CFCPhaseRotatorAuto"];
 
             cfceq[0] = (int)dr["CFCPreComp"];
             for (int i = 1; i < 11; i++)
@@ -18503,7 +18588,7 @@ namespace Thetis
             {
                 fixed (double* Fptr = &F[0], Gptr = &G[0], Eptr = &E[0])
                 {
-                    WDSP.SetTXACFCOMPprofile(WDSP.id(1, 0), nfreqs, Fptr, Gptr, Eptr, null, null);
+                    WDSP.SetTXACFCOMPprofile(WDSP.id(1, 0), nfreqs, Fptr, Gptr, Eptr, (double*)0, (double*)0);
                 }
             }
 
@@ -23644,6 +23729,89 @@ namespace Thetis
                 MessageBoxDefaultButton.Button1, Common.MB_TOPMOST);
         }
 
+        // Yurij-eu2av - 2026-07-08: Build the extra Phase Rotator controls
+        // programmatically and add them to the existing grpPhRot group box.
+        // This mirrors InitDetCalTab() and avoids the designer/build issues
+        // that made the designer-added controls disappear at runtime.
+        // Yurij-eu2av - 2026-07-08: create the extra Phase Rotator controls programmatically
+        // because the designer/resx path did not make them appear at runtime.
+        private void InitPhaseRotatorControls()
+        {
+            if (grpPhRot == null) return;
+
+            // Auto FC checkbox
+            chkPHROTAuto = new CheckBoxTS();
+            chkPHROTAuto.AutoSize = true;
+            chkPHROTAuto.Image = null;
+            chkPHROTAuto.Location = new System.Drawing.Point(120, 19);
+            chkPHROTAuto.Name = "chkPHROTAuto";
+            chkPHROTAuto.Size = new System.Drawing.Size(63, 17);
+            chkPHROTAuto.TabIndex = 158;
+            chkPHROTAuto.Text = "Auto FC";
+            toolTip1.SetToolTip(chkPHROTAuto, "Enable automatic corner-frequency optimisation");
+            chkPHROTAuto.UseVisualStyleBackColor = true;
+            chkPHROTAuto.CheckedChanged += new System.EventHandler(this.chkPHROTAuto_CheckedChanged);
+            grpPhRot.Controls.Add(chkPHROTAuto);
+
+            // Reset button
+            btnPHROTReset = new ButtonTS();
+            btnPHROTReset.Image = null;
+            btnPHROTReset.Location = new System.Drawing.Point(120, 42);
+            btnPHROTReset.Name = "btnPHROTReset";
+            btnPHROTReset.Size = new System.Drawing.Size(45, 23);
+            btnPHROTReset.TabIndex = 159;
+            btnPHROTReset.Text = "Reset";
+            toolTip1.SetToolTip(btnPHROTReset, "Reset optimiser to default 338 Hz and restart search");
+            btnPHROTReset.UseVisualStyleBackColor = true;
+            btnPHROTReset.Click += new System.EventHandler(this.btnPHROTReset_Click);
+            grpPhRot.Controls.Add(btnPHROTReset);
+
+            // Status label
+            lblPHROTStatus = new LabelTS();
+            lblPHROTStatus.AutoSize = true;
+            lblPHROTStatus.Image = null;
+            lblPHROTStatus.Location = new System.Drawing.Point(170, 47);
+            lblPHROTStatus.Name = "lblPHROTStatus";
+            lblPHROTStatus.Size = new System.Drawing.Size(21, 13);
+            lblPHROTStatus.TabIndex = 160;
+            lblPHROTStatus.Text = "Off";
+            toolTip1.SetToolTip(lblPHROTStatus, "Auto-optimiser status");
+            grpPhRot.Controls.Add(lblPHROTStatus);
+
+            // Asymmetry IN label
+            lblPHROTAsymIn = new LabelTS();
+            lblPHROTAsymIn.AutoSize = true;
+            lblPHROTAsymIn.Image = null;
+            lblPHROTAsymIn.Location = new System.Drawing.Point(120, 72);
+            lblPHROTAsymIn.Name = "lblPHROTAsymIn";
+            lblPHROTAsymIn.Size = new System.Drawing.Size(27, 13);
+            lblPHROTAsymIn.TabIndex = 161;
+            lblPHROTAsymIn.Text = "IN: -";
+            grpPhRot.Controls.Add(lblPHROTAsymIn);
+
+            // Asymmetry OUT label
+            lblPHROTAsymOut = new LabelTS();
+            lblPHROTAsymOut.AutoSize = true;
+            lblPHROTAsymOut.Image = null;
+            lblPHROTAsymOut.Location = new System.Drawing.Point(120, 90);
+            lblPHROTAsymOut.Name = "lblPHROTAsymOut";
+            lblPHROTAsymOut.Size = new System.Drawing.Size(39, 13);
+            lblPHROTAsymOut.TabIndex = 162;
+            lblPHROTAsymOut.Text = "OUT: -";
+            grpPhRot.Controls.Add(lblPHROTAsymOut);
+
+            // Corner frequency label
+            lblPHROTFc = new LabelTS();
+            lblPHROTFc.AutoSize = true;
+            lblPHROTFc.Image = null;
+            lblPHROTFc.Location = new System.Drawing.Point(120, 108);
+            lblPHROTFc.Name = "lblPHROTFc";
+            lblPHROTFc.Size = new System.Drawing.Size(27, 13);
+            lblPHROTFc.TabIndex = 163;
+            lblPHROTFc.Text = "FC: -";
+            grpPhRot.Controls.Add(lblPHROTFc);
+        }
+
         private Dictionary<string, PAProfile> _PAProfiles;
         private void initPAProfiles()
         {
@@ -28762,6 +28930,55 @@ namespace Thetis
             if (initializing) return;
             int run = chkPHROTReverse.Checked ? 1 : 0;
             WDSP.SetTXAPHROTReverse(WDSP.id(1, 0), run);
+        }
+
+        // Yurij-eu2av - 2026-07-08: Phase Rotator Auto FC toggle.
+        private void chkPHROTAuto_CheckedChanged(object sender, EventArgs e)
+        {
+            if (initializing) return;
+            WDSP.SetTXAPHROTAutoMode(WDSP.id(1, 0), chkPHROTAuto.Checked ? 1 : 0);
+        }
+
+        // Yurij-eu2av - 2026-07-08: Phase Rotator reset to default 338 Hz.
+        private void btnPHROTReset_Click(object sender, EventArgs e)
+        {
+            if (initializing) return;
+            WDSP.SetTXAPHROTAutoReset(WDSP.id(1, 0));
+        }
+
+        // Yurij-eu2av - 2026-07-08: Phase Rotator status/asymmetry/FC update timer.
+        private void timerPhRot_Tick(object sender, EventArgs e)
+        {
+            if (initializing) return;
+            unsafe
+            {
+                double in_pos = 0.0, in_neg = 0.0, in_ratio = 0.0;
+                double out_pos = 0.0, out_neg = 0.0, out_ratio = 0.0;
+                double current_fc = 0.0, auto_step = 0.0;
+                double* p_in_pos = &in_pos;
+                double* p_in_neg = &in_neg;
+                double* p_in_ratio = &in_ratio;
+                double* p_out_pos = &out_pos;
+                double* p_out_neg = &out_neg;
+                double* p_out_ratio = &out_ratio;
+                double* p_current_fc = &current_fc;
+                double* p_auto_step = &auto_step;
+                WDSP.GetTXAPHROTAsymmetry(WDSP.id(1, 0),
+                                          p_in_pos, p_in_neg, p_in_ratio,
+                                          p_out_pos, p_out_neg, p_out_ratio,
+                                          p_current_fc, p_auto_step);
+
+                lblPHROTAsymIn.Text = string.Format("IN: {0:F1}%", in_ratio * 100.0);
+                lblPHROTAsymOut.Text = string.Format("OUT: {0:F1}%", out_ratio * 100.0);
+                lblPHROTFc.Text = string.Format("FC: {0:F0} Hz", current_fc);
+
+                if (auto_step == 0.0)
+                    lblPHROTStatus.Text = "Off";
+                else if (auto_step == -1.0)
+                    lblPHROTStatus.Text = "Done";
+                else
+                    lblPHROTStatus.Text = "Search";
+            }
         }
 
         private void chkRecoverPAProfileFromTXProfile_CheckedChanged(object sender, EventArgs e)

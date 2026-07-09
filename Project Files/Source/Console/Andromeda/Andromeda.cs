@@ -44,7 +44,6 @@ namespace Thetis
         private bool AriesTuneState = false;                    // ATU tune state; true if solution available
         private bool AriesEnabled = false;                      // true if ARIES ATU function enabled
         private int AriesAntenna = 0;                           // antenna that Aries has been told to tune for
-        private int AriesRXAntenna = 0;                         // RX antenna that Aries has been told to set
         private int TXAntennaSent = -1;                         // antenna in use for TX
         private string RXAntennaSentString = "none";            // antenna in use for RX
 
@@ -890,8 +889,6 @@ namespace Thetis
                 }
             }
         }
-        private int GanymedeTripState = 0;                      // amplifier trip
-
         //
         // send a CAT message over TCP/IP
         //

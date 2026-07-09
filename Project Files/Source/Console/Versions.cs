@@ -1,4 +1,5 @@
-﻿// ideas from https://www.dmcinfo.com/latest-thinking/blog/id/5578/sharing-enums-and-constants-between-a-c-and-c-project
+﻿// Yurij_eu2av: WDSP version updated to 2.00
+// ideas from https://www.dmcinfo.com/latest-thinking/blog/id/5578/sharing-enums-and-constants-between-a-c-and-c-project
 
 #if WIN32 
     // removes public keyword
@@ -20,7 +21,7 @@
 
         public const int _CMASTER_VERSION = 1040;
         public const int _CMASTER_ASIO_VERSION = 1020;
-        public const int _WDSP_VERSION = 1290; // from wdsp\version.c
+        public const int _WDSP_VERSION = 2000; // from wdsp\version.c - WDSP 2.00
         public const int _PORTAUDIO_VERSION = 1970;  // from pa_front.c
 
 #if WIN32

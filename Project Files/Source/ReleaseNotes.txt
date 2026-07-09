@@ -1,4 +1,4 @@
-IMPORTANT : if you are updating from a pre v2.10.3.13 version then make a backup of your database before using this version. If you have an existing database that pre-dates v2.10.3.13 then Thetis will pop up a message asking you to restart whilst holding down the CTRL key. Please follow the onscreen instructions.
+IMPORTANT : if you are updating from a pre v2.10.3.13 version then make a backup of your database before using this version. If you have an existing database that pre-dates v2.10.3.13 then Thetis will now automatically detect the incompatibility and show a Yes/No dialog asking to update the database. A backup is created automatically before the update. You no longer need to hold down the CTRL key. Holding CTRL (or creating an empty text file called 'updatedb.txt' in the data path) is still available as a manual force-upgrade fallback.
 
 Here is a video covering most of the new features in v2.10.3.13 : https://youtu.be/LQlAEiWw3h4
 
@@ -17,9 +17,10 @@ EDIT: actually v2.10.3.15 will be the last ;)
 ## v2.10.3.15 - Change Log
 - [add] option to allow smearing of waterfalls (default off), Setup->Appearance->General
 	Some ctun off users wanted the old display method even though a smeared waterfall is pointless new data, and the old data is now incorrectly aligned so is also pointless.
-- [add] there have been some issues where the CTRL key is not detected to update the database.
-	A database update can now be forced by adding a file to the data path folder which is normally C:\Users\<you>\AppData\Roaming\OpenHPSDR\Thetis-x64
-	The file should be an empty text file called 'updatedb.txt'. It will get renamed if successful.
+- [change] database updates from pre-v2.10.3.13 databases are now automatic: Thetis detects the incompatible/old database and shows a Yes/No consent dialog, creating a backup before updating. Holding CTRL is no longer required.
+- [add] as a fallback, a database update can still be forced by adding an empty text file called 'updatedb.txt' to the data path folder (normally C:\Users\<you>\AppData\Roaming\OpenHPSDR\Thetis-x64). It will get renamed if successful.
+- [fix] fixed the "fft wisdom file is missing" warning appearing on every startup even after wisdom had already been built. The check was looking for wdspWisdom00 while WDSP creates wdspWisdom01; the correct filename is now used and any legacy wdspWisdom00 file is migrated or removed.
+- [fix] CW Audio Peaking Filter (APF) default settings adjusted to match WDSP recommendations: gain now defaults to 6 dB (slider 60) instead of 0 dB, and bandwidth defaults to 100 Hz instead of 150 Hz. This restores a clearly audible peaking effect for the BI/DP/MA/GA modes on new/clean installs.
 - [change] ANAN-G1 has become ANAN-G2E, and HermesIII board has become HermesC10 - Rick N1GP
 - [change] nuget update to use latest libs etc
 

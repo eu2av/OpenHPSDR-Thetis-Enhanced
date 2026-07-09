@@ -1827,7 +1827,7 @@ namespace Thetis
                 }
                 catch (Exception ex)
                 {
-                    Debug.Print("problem writing queued frame");
+                    Debug.Print($"problem writing queued frame: {ex.Message}");
                     abortSocketTransport();
                 }
             }

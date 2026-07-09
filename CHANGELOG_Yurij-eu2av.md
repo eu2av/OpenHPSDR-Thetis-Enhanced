@@ -2,9 +2,347 @@
 
 **Проект:** Thetis SDR (openHPSDR transceiver software)
 **Версия-база:** Thetis 2.10.x (VS2026 solution)
-**Дата:** 2026-07-03
+**Дата:** 2026-07-09
 **Автор:** Yurij-eu2av
 **Назначение:** Документирование локальных дополнений для передачи авторам Thetis / интеграции в upstream.
+
+---
+
+## 2026-07-09 — Корректные дефолты для CW APF (Audio Peaking Filter)
+
+### Summary
+- Проанализированы жалобы телеграфистов на то, что новые режимы APF (BI/DP/MA/GA)
+  стали звучать менее выраженно, чем раньше.
+- Алгоритмы фильтров в WDSP 2.00 не изменились по сравнению с WDSP 1.29; разница
+  была в дефолтах Thetis.
+- WDSP Guide рекомендует дефолтный gain = **2.0** (6 dB) и bandwidth = **100 Гц**.
+- Thetis выставлял gain = 1.0 (0 dB) и bandwidth = 150 Гц, поэтому пик фильтра
+  практически не был слышен.
+- Дефолты приведены в соответствие с рекомендациями WDSP:
+  - gain = 60 на ползунке (6 dB);
+  - bandwidth = 100 Гц.
+- Подпись уровня gain теперь показывает единицы: "Gain: X dB".
+
+### Изменённые файлы
+- `Project Files/Source/Console/console.Designer.cs` — дефолт `ptbCWAPFGain.Value = 60`,
+  `ptbCWAPFBandwidth.Value = 100`.
+- `Project Files/Source/Console/setup.designer.cs` — дефолтные значения 60/100 для
+  trackbar'ов APF gain/bandwidth на всех RX.
+- `Project Files/Source/Console/console.cs` — подпись gain теперь содержит "dB".
+- `Project Files/Source/Console/radio.cs` — дефолтные поля `rx_apf_gain`/`rx_apf_bw`
+  приведены к 2.0/100.
+
+---
+
+## 2026-07-09 — Исправление повторяющегося предупреждения о построении FFT wisdom
+
+### Summary
+- Исправлена ошибка, из-за которой Thetis показывал сообщение «The fft wisdom file is missing...» при каждом запуске, даже после успешного построения wisdom.
+- C#-код проверял наличие файла `wdspWisdom00`, тогда как WDSP давно создаёт и использует `wdspWisdom01`.
+- Теперь проверяется именно `wdspWisdom01`. Устаревший `wdspWisdom00`, если он остался от предыдущих версий, автоматически переименовывается в `wdspWisdom01` (если `01` отсутствует) или удаляется.
+- Первый запуск по-прежнему построит wisdom и покажет предупреждение, все последующие запуски будут проходить без лишних окон.
+
+### Изменённые файлы
+- `Project Files/Source/Console/radio.cs` — проверка наличия `wdspWisdom01`, обработка устаревшего `wdspWisdom00`.
+
+---
+
+## 2026-07-09 — Автоматическое обновление базы данных при несовместимости схемы
+
+### Summary
+- Реализовано автоматическое обнаружение устаревшей или повреждённой базы данных
+  после добавления новых функций/колонок.
+- При загрузке Thetis теперь проверяется совместимость схемы базы: наличие всех
+  колонок в `TXProfile`, отсутствие `DBNull` в обязательных полях, наличие
+  `VersionNumber`/`Version` в `State` и дефолтного профиля `TXProfileDef`.
+- Если база несовместима, появляется предупреждающее окно с просьбой согласия
+  на обновление. Перед обновлением автоматически создаётся резервная копия.
+- Обновление выполняется через создание новой базы и слияние старой
+  (`ImportAndMergeDatabase`), что заполняет недостающие поля значениями по умолчанию.
+- Удержание клавиши **Ctrl** при запуске больше не требуется — автоматический
+  диалог согласия появляется сам. Ctrl (и пустой файл `updatedb.txt` в папке
+  данных) оставлены только как ручной force-upgrade на крайний случай.
+
+### Изменённые файлы
+- `Project Files/Source/Console/clsDBMan.cs` — диалог согласия Yes/No, бэкап
+  перед обновлением, передача признака несовместимости схемы в `checkVersion()`.
+- `Project Files/Source/Console/database.cs` — новый метод `IsDatabaseCompatible()`,
+  проверяющий схему и данные `TXProfile`/`TXProfileDef`/`State`.
+- `Project Files/Source/Console/console.cs` — обновлён текст fallback-сообщения
+  об ошибке базы данных: теперь указано на автоматическое обновление, а Ctrl
+  упоминается только как ручной fallback.
+
+---
+
+## 2026-07-09 — Кнопка APF (CW): корректный вид и независимая папка скинов SkinsAPF
+
+### Summary
+- Кнопка выбора типа APF (`btnAPF_type`) переведена с `ButtonTS` на `CheckBoxTS` с
+  `Appearance = Button`, как у кнопки `SEMI`/`chkQSK`. Теперь она корректно
+  обрабатывается движком скинов и выглядит как настоящая кнопка.
+- Надписи режимов **DP / MA / GA / BI** теперь читаемы: белый жирный текст по центру,
+  flat-стиль без рамки, тёмный фон.
+- Подправлена компоновка: размер кнопки возвращён к 36×20, а метка `Tune:` сдвинута
+  влево на ~1 мм (с `44, 16` на `40, 16`), чтобы зазор между кнопкой и подписью был
+  аккуратным.
+- Добавлена **независимая папка скинов `SkinsAPF`** рядом с папкой `Skins`.
+  Изображения для кнопки APF подгружаются оттуда, если их нет в текущем скине.
+  Это позволяет менять внешний вид APF без необходимости обновлять все существующие
+  профили скинов.
+- Если папка `SkinsAPF` отсутствует, Thetis **автоматически создаёт её при первом
+  запуске** вместе с набором дефолтных PNG-заглушек для всех состояний кнопки.
+  Пользователь может заменить эти PNG на свои.
+
+### Изменённые файлы
+- `Project Files/Source/Console/console.Designer.cs` — `btnAPF_type` теперь `CheckBoxTS`
+  с `Appearance = Button`, `AutoCheck = false`, flat-стиль, белый текст.
+- `Project Files/Source/Console/console.resx` — обновлён тип контрола, убраны
+  устаревшие свойства `ButtonTS`, скорректировано положение `lblCWAPFTune`.
+- `Project Files/Source/Console/Skin.cs` — добавлен fallback на папку `SkinsAPF`
+  (рядом со `Skins` и рядом с `Thetis.exe`), автоматическое создание дефолтных PNG
+  при их отсутствии.
+- `Project Files/Source/Console/Thetis.csproj` — MSBuild-таргет копирует `SkinsAPF/*.png`
+  в выходную директорию при сборке.
+- Новая папка `SkinsAPF/` в корне репозитория — базовые PNG-заглушки для кнопки APF.
+
+---
+
+## 2026-07-08 — WDSP 2.00: Phase Rotator (Auto/Reset/Asymmetry) и PSA over-drive indicator
+
+### Summary
+- Доведена до конца реализация **Phase Rotator** согласно WDSP 2.00 Guide:
+  добавлены недостающие вызовы `SetTXAPHROTAutoMode`, `SetTXAPHROTAutoReset`,
+  `GetTXAPHROTAsymmetry`.
+- В группу **Phase Rotator** на вкладке DSP CFC добавлены:
+  - чекбокс **Auto FC** (включение/выключение авто-оптимизации угловой частоты);
+  - кнопка **Reset** (сброс оптимизатора на 338 Гц и перезапуск поиска);
+  - индикаторы асимметрии сигнала **IN / OUT** и текущей частоты **FC**;
+  - статус оптимизатора (**Off / Search / Done**).
+- Добавлено визуальное предупреждение PureSignal: при `GetPSInfo info[6] == 2`
+  (severe over-drive по WDSP 2.00 Guide) поле `lblPSInfo6` подсвечивается красным.
+
+### Изменённые файлы
+- `Project Files/Source/Console/dsp.cs` — импорты `SetTXAPHROTAutoMode`,
+  `SetTXAPHROTAutoReset`, `GetTXAPHROTAsymmetry`.
+- `Project Files/Source/Console/setup.designer.cs` — UI-элементы Phase Rotator.
+- `Project Files/Source/Console/setup.cs` — обработчики Auto/Reset, таймер обновления
+  асимметрии/статуса (`timerPhRot_Tick`), сохранение `CFCPhaseRotatorAuto` в TX-профиль.
+- `Project Files/Source/Console/database.cs` — добавлено поле `CFCPhaseRotatorAuto` в таблицу
+  TX-профиля, во все строки дефолтов и миграция `VerifyTXProfileColumns()` для старых БД.
+- `Project Files/Source/Console/PSForm.cs` — подсветка `lblPSInfo6` при `info[6] == 2`.
+
+### Fix (2026-07-08 later)
+- Новые контролы Phase Rotator (Auto FC, Reset, статус/асимметрия) вынесены из
+  `setup.designer.cs` и создаются программно в `setup.cs` методом
+  `InitPhaseRotatorControls()` — по аналогии с вкладкой Det. Cal. Это исключает
+  ситуацию, когда элементы видны в конструкторе, но не попадают в рабочую сборку.
+
+---
+
+## 2026-07-08 — Брендинг и информация об авторе
+
+### Summary
+- В заголовок главного окна добавлено обозначение **extended version-eu2av**.
+- В форму **About Thetis** в список contributors добавлен **EU2AV, Yurij**
+  с указанием направлений: PureSignal enhancements, feedback calibration,
+  Anvelina PRO3 firmware update & firmware.
+
+### Изменённые файлы
+- `Project Files/Source/Console/titlebar.cs` — константа `EXTENDED_NAME` и вывод в `GetString()`.
+- `Project Files/Source/Console/frmAbout.Designer.cs` — добавлена строка в `lstContributors`.
+
+---
+
+## 2026-07-08 — PureSignal: калибровка Feedback Level / Auto-ATT и Outlier-фильтр
+
+### Summary
+- Добавлена настраиваемая цель **Feedback Level** для PureSignal.
+- Для платформы **Orion MK2** (`ANAN-7000D`, `ANAN-8000D`, `ANVELINAPRO3`) цель по умолчанию
+  **22** (вместо захардкоженного 152). Это соответствует рабочей точке ATT ≈ 10 dB,
+  где feedback не перегружает ADC2208 и кодек, а IMD остаётся чистым.
+- Индикатор Feedback Level и авто-аттенюатор теперь работают относительно этой цели.
+- Добавлен **Outlier-фильтр** для cubic-spline движка; на Orion MK2 включён по умолчанию
+  с **sigma = 5.0**, на остальном железе — выключен.
+
+### Почему именно такие уровни
+- Уровни выбраны по результатам измерений реального сигнала на Anvelina PRO3 /
+  ANAN-7000 (Orion MK2): отслеживалась точка, при которой начинается интермодуляция
+  АЦП2208 и кодека.  Feedback Level ≈ 22 при ATT ≈ 10 dB оказался оптимальным
+  компромиссом между достаточным feedback для коррекции и линейностью входных каскадов.
+
+### Feedback Level / Auto-ATT
+- `clsHardwareSpecific.cs` — `PSTargetFeedbackLevel`: 152 для большинства моделей,
+  22 для Orion MK2 (`ANAN7000D`, `ANAN8000D`, `ANVELINAPRO3`).
+- `Setup.cs` / `Setup.designer.cs` — скрытый persisted numeric `udPSTargetFeedbackLevel`.
+- `PSForm.cs` — `puresignal.TargetFeedbackLevel`, зелёная/жёлтая/красная зоны
+  считаются от цели (±30% / ±50%).
+- `timer2code()` — авто-аттенюатор корректирует ATT относительно цели, а не 152.293.
+- `PSForm.designer.cs` — UI numeric `udPSTargetFeedback` на вкладке Advanced.
+
+### Outlier-фильтр
+- `PSForm.designer.cs` — добавлен `chkPSOutlierEnable` рядом с `udPSOutlierSigma`.
+- `Setup.cs` / `Setup.designer.cs` — скрытые persisted контролы `chkPSOutlierEnable`
+  и `udPSOutlierSigma`.
+- `clsHardwareSpecific.cs` — дефолты: Orion MK2 → ON / 5.0, остальное → OFF / 2.5.
+- `PSForm.cs` — `SetPSOutlierSigma(0)` при выключенном фильтре, значение sigma при включении;
+  изменения сохраняются в настройках.
+- `wdsp/calcc.h` — поле `outlier_sigma` в `CALCC`.
+- `wdsp/calcc.c` — рабочий `SetPSOutlierSigma`, `reject_outliers()` по медиане отношений и MAD,
+  вызов перед `xbuilder`.
+
+---
+
+## 2026-07-07 — Cleanup: устранены предупреждения MSB8012, CSxxxx, MSB3884
+
+### Summary
+- Проведена "качественная" чистка сборки: вместо подавления warning-ов устранены
+  их причины.
+
+### MSB8012 (C++ projects)
+- В `.vcxproj` проектов `wdsp`, `portaudio`, `cmASIO`, `ChannelMaster` выровнены
+  `OutDir`/`TargetName`/`TargetExt` с `Link.OutputFile`.
+- DLL по-прежнему собираются в `Project Files/bin/$(Platform)/$(Configuration)/`;
+  `.lib` и `.pdb` остаются в `Project Files/build/$(Platform)/$(Configuration)/`.
+- Для `portaudio` задан `TargetName=PA19` (выходной файл `PA19.dll`).
+
+### C# warnings (Console)
+- Удалены неиспользуемые локальные переменные и приватные поля в
+  `PanDisplay.cs`, `wbDisplay.cs`, `console.cs`, `TCIServer.cs`,
+  `Andromeda/Andromeda.cs`, `Path_Illustrator.cs`.
+- В `TCIServer.cs` исключение теперь логируется через `Debug.Print`.
+
+### MSB3884 (ruleset)
+- В `Midi2Cat.csproj` и `RawInput.csproj` отсутствующий
+  `..\Live Analysis.ruleset` заменён на `ManagedMinimumRules.ruleset`.
+- В `RawInput/DataStructures.cs` для маршалируемых полей структуры
+  `BroadcastDeviceInterface` отключён `CS0649`.
+
+### Результат
+- Сборка `x64 Release` проходит без предупреждений MSB8012/CSxxxx/MSB3884.
+
+---
+
+## 2026-07-08 — Возврат к проверенному WDSP 1.x PureSignal engine + рабочие ручки
+
+### Summary
+- После множества попыток адаптировать NURBS/spline движок WDSP 2.00 к реальному
+  железу ANAN-7000 / Anvelina PRO III было решено вернуть проверенный
+  cubic-spline PureSignal engine из WDSP 1.x.
+- Новый NURBS-движок давал IMD-«юбку», которую не убирала ни ручная аттенюация,
+  ни настройка `rx_scale`, ни изменение `PS Peak`.
+- Ядро WDSP 1.x (`calcc` + `iqc`) обеспечивает такое же качество коррекции,
+  как в предыдущей рабочей сборке `C:\Users\Yury\Desktop\Thetis-master`.
+
+### Что заменено
+- `Project Files/Source/wdsp/calcc.c` + `calcc.h` — WDSP 1.x (cubic spline,
+  `xbuilder`, `rxscheck`, `scheck`, `pin`/`map`/`stbl`).
+- `Project Files/Source/wdsp/iqc.c` + `iqc.h` — WDSP 1.x (cubic coefficient
+  корректор `cm`/`cc`/`cs`).
+- `Project Files/Source/wdsp/TXA.h` — возвращена структура `iqc.p0`/`iqc.p1`.
+- `Project Files/Source/wdsp/TXA.c` — вызовы `create_calcc`/`create_iqc` с
+  параметрами WDSP 1.x:
+  - `ints = 16`, `spi = 256`, `ptol = 0.8`, `pin = 1`, `map = 0`, `stbl = 1`,
+    `npsamps = 256`, `alpha = 0.9`, `hw_scale = 1/0.2899`.
+
+### Совместимость с новым UI
+- Добавлены `__declspec(dllexport)` stubs для функций WDSP 2.0, которые
+  использует новый Thetis UI, но которых нет в WDSP 1.x:
+  `SetPSEMAAlpha`, `SetPSPinAlpha`, `SetPSDCBEnable`, `SetPSDCBCap`,
+  `SetPSEQEnable`, `SetPSOutlierSigma`, `ResetPSAdvancedParams`.
+- `SetPSEMAAlpha` **реально работает**: значение UI `EMA α` (0..1, где 0 = frozen,
+  1 = no smoothing) инвертируется и подаётся на старый `alpha` сглаживания
+  WDSP 1.x. Значения >1 обрезаются.
+- Дефолт `EMA α` установлен в **1.00** (нет сглаживания) — мгновенная реакция
+  на изменения, что особенно удобно для SSB/CW.
+- `SetPSPinMode` и `SetPSStabilize` продолжают управлять `pin`/`stbl`.
+- Остальные ручки (`Pin α`, `EQ`, `DCB`) no-op для WDSP 1.x движка.
+- `Outlier σ` позже реализован отдельным пре-фильтром перед `xbuilder`.
+
+### AmpView
+- `GetPSDisp` адаптирован под 12-аргументный вызов WDSP 2.0 UI.
+- `AmpView.cs` снова получает кубические коэффициенты `cm`/`cc`/`cs` и
+  корректно рисует кривые Gain/Phs Amp и Correction.
+
+### Логирование
+- `PSAutoAttenuate.log` продолжает писать info-биты `I0..I3`, `I6`, счётчики
+  `C`/`A`, Feedback Level, ATT — удобно для диагностики ручной рабочей точки.
+
+### Build status
+- `wdsp.vcxproj` x64 Release: 0 errors.
+- Full solution `Thetis_VS2026.sln` x64 Release: 0 errors, ~70 warnings.
+- `Thetis.exe` запускается, PureSignal корректирует без «юбки».
+
+---
+
+## 2026-07-07 — Восстановлены продвинутые ручки PureSignal для WDSP 2.00
+
+### Summary
+- Возвращены экспортируемые функции WDSP 1.x: `SetPSPtol`, `SetPSPinMode`, `SetPSMapMode`, `SetPSStabilize`, `SetPSIntsAndSpi`.
+- Реализованы как обёртки, перенаправляющие старые параметры на ближайшие настройки нового NURBS/spline движка WDSP 2.00.
+- Переключатели в `PSForm.cs` снова работают; сохранена совместимость UI и пользовательских настроек.
+
+### Mapping старых функций на NURBS-движок
+| Функция | Старый смысл | Новое поведение WDSP 2.00 |
+|---|---|---|
+| `SetPSPtol` | Допуск отсечения овердрайв-выборок | `outlier_sigma = 1.5 + ptol * 1.875` для MAG/COS/SIN NURBS-фитов |
+| `SetPSPinMode` | Pin-режим высокомощного конца | Переключает `pin_start` для COS/SIN; MAG end-pin оставлен включённым |
+| `SetPSMapMode` | Режим разбиения амплитуды | Включает/выключает `eq_enable` (density equalization) |
+| `SetPSStabilize` | EMA-сглаживание решений | `stbl=1` -> `alpha=0.30`; `stbl=0` -> `alpha=1.0` (без сглаживания) |
+| `SetPSIntsAndSpi` | Число интеграций/выборок | Сохраняет значения, сбрасывает коллектор для пересбора (фиксированный bucket-коллектор WDSP 2.00) |
+
+### Files changed
+- `Project Files/Source/wdsp/calcc.h`: добавлены поля `ptol`, `pin_mode`, `map_mode`, `stbl`, `ints`, `spi` и `extern`-объявления.
+- `Project Files/Source/wdsp/calcc.c`: инициализация полей, применение `ptol`/`pin_mode`/`map_mode` в `calc()`, реализация пяти `SetPS*` функций.
+- `Project Files/Source/Console/PSForm.cs`: добавлены `DllImport` и включены обработчики `chkPSRelaxPtol`, `chkPSPin`, `chkPSMap`, `chkPSStbl`, `comboPSTint`.
+
+### Build status
+- `wdsp.vcxproj` x64 Release: 0 errors.
+- Full solution `Thetis_VS2026.sln` x64 Release: 0 errors, ~70 warnings.
+- `dumpbin -exports`: все пять функций присутствуют в `wdsp.dll`.
+- `Thetis.exe` запускается и не падает.
+
+---
+
+## 2026-07-07 — WDSP 2.00 integration completed (Q-factor EQ/CFCOMP ported)
+
+### Summary
+- Updated WDSP sources to version 2.00.
+- Ported Thetis-specific patches: pixel_ref, CBL position, NR3/NR4.
+- Adapted P/Invoke signatures for WDSP 2.00 (`GetPSDisp` 12 args, removed obsolete PS functions).
+- Ported Q-factor parametric EQ and CFCOMP from the MW0LGE Thetis patch to the WDSP 2.00 NURBS architecture.
+- Added `Yurij_eu2av` markers to modified C/C#/project files.
+
+### Details
+
+#### WDSP 2.00 source replacement
+- Replaced `Project Files/Source/wdsp/*` with WDSP 2.00 sources.
+- Added new files to `wdsp.vcxproj`: `extrapolate`, `nurbs*`, `phrot`, `reshb`, `snoop`, `wbfm`.
+- Updated `Versions.cs` `_WDSP_VERSION` to `2000`.
+
+#### Thetis patches ported
+- `analyzer.c/h`: restored `SetPixelRef`, `GetPixels(..., double* pixel_ref)`, `PixelRefSection`.
+- `cblock.c/h`: restored `position` parameter and `SetRXACBLPosition`.
+- `rnnr.c/h`, `sbnr.c/h`: integrated into `RXA.c/h` and `comm.h`; extended `RXAbp1Check`.
+
+#### P/Invoke adaptations
+- `dsp.cs`: `GetPSDisp` 12 params; EQ/CFCOMP signatures with optional Q; removed obsolete PS imports.
+- `PSForm.cs`, `AmpView.cs`: removed obsolete PS calls; updated `GetPSDisp`.
+- `eqform.cs`, `frmCFCConfig.cs`, `setup.cs`: updated EQ/CFCOMP call sites.
+
+#### Q-factor parametric EQ/CFCOMP port
+- `eq.c/h`: added `Q` parameter to `eq_impulse` and `SetRXAEQProfile`/`SetTXAEQProfile`; Gaussian-blend Q path is active when `Q != NULL`, legacy linear/NURBS path when `Q == NULL`.
+- `cfcomp.c/h`: added optional `Qg`/`Qe` to `SetTXACFCOMPprofile`; Gaussian-blend Q path in `calc_compG`/`calc_compE`.
+- `fmsq.c`: updated `eq_impulse` calls for the new signature.
+- C# call sites pass Q arrays when parametric mode is enabled, otherwise `NULL`.
+
+### Known limitations
+- Win32 (x86) build: `rnnoise.lib`/`specbleach.lib` are only available for x64. The x86 build requires adding x86 NR binaries or conditionally disabling NR3/NR4.
+
+### Build status
+- `wdsp.vcxproj` x64 Release: 0 errors.
+- Full solution `Thetis_VS2026.sln` x64 Release: 0 errors, ~70 warnings.
+- `dumpbin /exports`: all required imports present.
+- `Thetis.exe` starts and runs without crash.
 
 ---
 

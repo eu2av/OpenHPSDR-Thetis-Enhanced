@@ -138,6 +138,7 @@ CALCC create_calcc (int channel, int runcal, int size, int rate, int ints, int s
 	a->stbl = stbl;
 	a->npsamps = npsamps;
 	a->alpha = alpha;
+	a->outlier_sigma = 0.0;
 
 	a->info  = (int *) malloc0 (16 * sizeof (int));
 	a->binfo = (int *) malloc0 (16 * sizeof (int));
@@ -321,6 +322,120 @@ void rxscheck (int rints, double* tvec, double* coef, int* info)
 	if (out < 0.00) *info |= 0x0020;
 }
 
+// Yurij_eu2av: fallback rx_scale estimator.  It averages the top few
+// amplitude intervals (ignoring overrange samples) and linearly extrapolates
+// to full TX scale (env_TX = 1/hw_scale).  Used only if the cubic xbuilder
+// fit fails or is rejected by rxscheck.
+static int estimate_rx_scale_from_top_intervals(CALCC a, double* rx_scale_out)
+{
+	const int n_top = 4;
+	double sx[4], sy[4], sw[4];
+	int valid = 0;
+	for (int b = a->ints - 1; b >= 0 && valid < n_top; b--)
+	{
+		int base = b * a->spi;
+		double sum_x = 0.0, sum_y = 0.0;
+		int n = 0;
+		for (int j = 0; j < a->spi; j++)
+		{
+			int k = base + j;
+			double nx = a->env_TX[k] * a->hw_scale;
+			if (nx > 1.0 || nx < 0.0) continue;
+			if (a->env_TX[k] < 1.0e-30 || a->env_RX[k] < 1.0e-30) continue;
+			sum_x += a->env_TX[k];
+			sum_y += a->env_RX[k];
+			n++;
+		}
+		if (n == 0) continue;
+		sx[valid] = sum_x / (double)n;
+		sy[valid] = sum_y / (double)n;
+		sw[valid] = (double)n;
+		valid++;
+	}
+	if (valid < 2) return -1;
+	double s_w = 0.0, s_x = 0.0, s_y = 0.0, s_xx = 0.0, s_xy = 0.0;
+	for (int i = 0; i < valid; i++)
+	{
+		double w = sw[i];
+		s_w  += w;
+		s_x  += w * sx[i];
+		s_y  += w * sy[i];
+		s_xx += w * sx[i] * sx[i];
+		s_xy += w * sx[i] * sy[i];
+	}
+	double det = s_w * s_xx - s_x * s_x;
+	if (fabs(det) < 1e-30) return -1;
+	double bb = (s_w * s_xy - s_x * s_y) / det;
+	double aa = (s_y - bb * s_x) / s_w;
+	double target_x = 1.0 / a->hw_scale;
+	double y_at_target = aa + bb * target_x;
+	if (y_at_target <= 1e-15) return -1;
+	*rx_scale_out = 1.0 / y_at_target;
+	return 0;
+}
+
+// Yurij_eu2av: robust outlier rejection for the cubic-spline xbuilder.
+// Fits rx = k*tx through the origin via median ratio, then rejects points
+// whose residual exceeds sigma * MAD.
+static int cmp_double(const void* a, const void* b)
+{
+	double da = *(const double*)a;
+	double db = *(const double*)b;
+	if (da < db) return -1;
+	if (da > db) return 1;
+	return 0;
+}
+
+static double median_double(double* v, int n)
+{
+	if (n <= 0) return 0.0;
+	if (n % 2 == 1)
+		return v[n / 2];
+	else
+		return 0.5 * (v[n / 2 - 1] + v[n / 2]);
+}
+
+static int reject_outliers(double* tx, double* rx, int n, double sigma)
+{
+	const int min_points = 32;
+	int i, keep = 0;
+	double* ratios;
+	double* absres;
+	double med_ratio, med_absres, thr;
+
+	if (n < min_points || sigma <= 0.0) return n;
+
+	ratios = (double*)malloc0(n * sizeof(double));
+	for (i = 0; i < n; i++)
+		ratios[i] = (tx[i] > 1.0e-30) ? rx[i] / tx[i] : 0.0;
+	qsort(ratios, n, sizeof(double), cmp_double);
+	med_ratio = median_double(ratios, n);
+	_aligned_free(ratios);
+
+	if (fabs(med_ratio) < 1.0e-30) return n;
+
+	absres = (double*)malloc0(n * sizeof(double));
+	for (i = 0; i < n; i++)
+		absres[i] = fabs(rx[i] - med_ratio * tx[i]);
+	qsort(absres, n, sizeof(double), cmp_double);
+	med_absres = median_double(absres, n);
+	_aligned_free(absres);
+
+	if (med_absres < 1.0e-30) return n;
+
+	thr = sigma * med_absres;
+	for (i = 0; i < n; i++)
+	{
+		if (fabs(rx[i] - med_ratio * tx[i]) <= thr)
+		{
+			tx[keep] = tx[i];
+			rx[keep] = rx[i];
+			keep++;
+		}
+	}
+	return (keep >= min_points) ? keep : n;
+}
+
 void calc (CALCC a)
 {
 	int i;
@@ -336,21 +451,58 @@ void calc (CALCC a)
 		double tvec[3];
 		double txrxcoefs[4 * 2];
 		double rx_scale;
+		int xb_ok = 0;
 		if (a->ints < 16) rints = 1;
 		else              rints = 2;
 		ix = rints - 1;
 		for (i = 0; i <= rints; i++)
 			tvec[i] = (double)i / (double)rints / a->hw_scale;
 		dx = tvec[rints] - tvec[rints - 1];
-		xbuilder(a->ccbld, a->nsamps, a->env_TX, a->env_RX, rints, tvec, &(a->binfo[0]), txrxcoefs, a->ptol);
+
+		// Yurij_eu2av: build a filtered dataset with overrange samples removed
+		// before running xbuilder.  Overrange env_TX*hw_scale > 1.0 can distort
+		// the cubic fit and produce an incorrect rx_scale.
+		double* tx_filt = (double*)malloc0(a->nsamps * sizeof(double));
+		double* rx_filt = (double*)malloc0(a->nsamps * sizeof(double));
+		int n_filt = 0;
+		for (i = 0; i < a->nsamps; i++)
+		{
+			double nx = a->env_TX[i] * a->hw_scale;
+			if (nx > 1.0 || nx < 0.0) continue;
+			if (a->env_TX[i] < 1.0e-30 || a->env_RX[i] < 1.0e-30) continue;
+			tx_filt[n_filt] = a->env_TX[i];
+			rx_filt[n_filt] = a->env_RX[i];
+			n_filt++;
+		}
+
+		// Yurij_eu2av: optional outlier rejection before cubic-spline fit.
+		if (a->outlier_sigma > 0.0)
+			n_filt = reject_outliers(tx_filt, rx_filt, n_filt, a->outlier_sigma);
+
+		xbuilder(a->ccbld, n_filt, tx_filt, rx_filt, rints, tvec, &(a->binfo[0]), txrxcoefs, a->ptol);
 		rxscheck (rints, tvec, txrxcoefs, &a->binfo[7]);
 		if ((a->binfo[0] == 0) && (a->binfo[7] == 0))
+		{
 			rx_scale = 1.0 / (txrxcoefs[4 * ix + 0] + dx * (txrxcoefs[4 * ix + 1] + dx * (txrxcoefs[4 * ix + 2] + dx * txrxcoefs[4 * ix + 3])));
-		else
+			xb_ok = 1;
+		}
+		else if (estimate_rx_scale_from_top_intervals(a, &rx_scale) == 0)
+		{
+			// Yurij_eu2av: xbuilder failed, but the bucket-average fallback
+			// gave a usable rx_scale.  Keep binfo[0] bit 0 set for diagnostics.
+			a->binfo[0] |= 0x0001;
+			xb_ok = 1;
+		}
+
+		_aligned_free(tx_filt);
+		_aligned_free(rx_filt);
+
+		if (!xb_ok)
 		{
 			a->scOK = 0;
 			goto cleanup;
 		}
+
 		if (a->stbl && _InterlockedAnd (&a->ctrl.running, 1))
 			a->rx_scale = a->alpha * a->rx_scale + (1.0 - a->alpha) * rx_scale;
 		else
@@ -1047,21 +1199,6 @@ void SetPSPtol (int channel, double ptol)
 }
 
 PORT
-void GetPSDisp (int channel, double* x, double* ym, double* yc, double* ys, double* cm, double* cc, double* cs)
-{
-	CALCC a = txa[channel].calcc.p;
-	EnterCriticalSection (&a->disp.cs_disp);
-	memcpy (x,  a->disp.x,  a->nsamps * sizeof (double));
-	memcpy (ym, a->disp.ym, a->nsamps * sizeof (double));
-	memcpy (yc, a->disp.yc, a->nsamps * sizeof (double));
-	memcpy (ys, a->disp.ys, a->nsamps * sizeof (double));
-	memcpy (cm, a->disp.cm, a->ints * 4 * sizeof (double));
-	memcpy (cc, a->disp.cc, a->ints * 4 * sizeof (double));
-	memcpy (cs, a->disp.cs, a->ints * 4 * sizeof (double));
-	LeaveCriticalSection (&a->disp.cs_disp);
-}
-
-PORT
 void SetPSFeedbackRate (int channel, int rate)
 {
 	CALCC a = txa[channel].calcc.p;
@@ -1162,4 +1299,109 @@ void SetPSIntsAndSpi (int channel, int ints, int spi)
 		SetPSControl (a->channel, 1, mancal, automode, turnon);
 		a->runcal = runcal;
 	}
+}
+/********************************************************************************************************
+*																										*
+*						  WDSP 2.0 compatibility stubs													*
+*																										*
+********************************************************************************************************/
+
+// Yurij_eu2av: the advanced PureSignal 3.0 controls exposed by the new Thetis
+// UI do not exist in the proven WDSP 1.x engine.  Provide no-op stubs so the
+// DLL exports are present and Thetis links cleanly.
+
+PORT
+void SetPSEMAAlpha (int channel, double alpha)
+{
+	CALCC a;
+	EnterCriticalSection (&txa[channel].calcc.cs_update);
+	a = txa[channel].calcc.p;
+	// Yurij_eu2av: map the WDSP 2.0 UI "EMA alpha" knob to the WDSP 1.x
+	// smoothing factor.  WDSP 2.0 semantics: 0 = frozen, 1 = no smoothing.
+	// WDSP 1.x smoothing formula is: out = alpha*old + (1-alpha)*new,
+	// so alpha = 1 is frozen and alpha = 0 is no smoothing.  Invert here.
+	double old_alpha = 1.0 - alpha;
+	if (old_alpha < 0.0) old_alpha = 0.0;
+	if (old_alpha > 1.0) old_alpha = 1.0;
+	a->alpha = old_alpha;
+	LeaveCriticalSection (&txa[channel].calcc.cs_update);
+}
+
+PORT
+void SetPSPinAlpha (int channel, double alpha)
+{
+	(void)channel;
+	(void)alpha;
+}
+
+PORT
+void SetPSDCBEnable (int channel, int enable)
+{
+	(void)channel;
+	(void)enable;
+}
+
+PORT
+void SetPSDCBCap (int channel, double cap)
+{
+	(void)channel;
+	(void)cap;
+}
+
+PORT
+void SetPSEQEnable (int channel, int enable)
+{
+	(void)channel;
+	(void)enable;
+}
+
+PORT
+void SetPSOutlierSigma (int channel, double sigma)
+{
+	CALCC a;
+	EnterCriticalSection (&txa[channel].calcc.cs_update);
+	a = txa[channel].calcc.p;
+	if (sigma < 0.0) sigma = 0.0;
+	a->outlier_sigma = sigma;
+	LeaveCriticalSection (&txa[channel].calcc.cs_update);
+}
+
+PORT
+void ResetPSAdvancedParams (int channel)
+{
+	CALCC a;
+	EnterCriticalSection (&txa[channel].calcc.cs_update);
+	a = txa[channel].calcc.p;
+	a->pin = 1;
+	a->map = 0;
+	a->stbl = 1;
+	a->alpha = 0.0;		// EMA UI 1.0 = no smoothing
+	a->outlier_sigma = 0.0;
+	LeaveCriticalSection (&txa[channel].calcc.cs_update);
+}
+
+// Yurij_eu2av: The new AmpView passes a 12-argument GetPSDisp.  The WDSP 1.x
+// display uses cm/cc/cs cubic coefficients, so map the extra pointer slots
+// to those arrays and copy the scatter data into the first four slots.
+PORT
+void GetPSDisp (int channel,
+	double* x, double* ym, double* yc, double* ys,
+	double* xm_cor, double* ym_cor, double* xa_cor, double* ya_cor,
+	int* nsamps_out, int* cpts_out, double* phs_ref_deg_out)
+{
+	CALCC a = txa[channel].calcc.p;
+	EnterCriticalSection (&a->disp.cs_disp);
+	memcpy (x,  a->disp.x,  a->nsamps * sizeof (double));
+	memcpy (ym, a->disp.ym, a->nsamps * sizeof (double));
+	memcpy (yc, a->disp.yc, a->nsamps * sizeof (double));
+	memcpy (ys, a->disp.ys, a->nsamps * sizeof (double));
+	// map coefficient arrays to the slots used by the new AmpView
+	memcpy (xm_cor, a->disp.cm, a->ints * 4 * sizeof (double));
+	memcpy (ym_cor, a->disp.cc, a->ints * 4 * sizeof (double));
+	memcpy (xa_cor, a->disp.cs, a->ints * 4 * sizeof (double));
+	*nsamps_out = a->nsamps;
+	*cpts_out = a->ints;
+	*phs_ref_deg_out = 0.0;
+	LeaveCriticalSection (&a->disp.cs_disp);
+	(void)ya_cor;
 }

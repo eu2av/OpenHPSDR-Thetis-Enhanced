@@ -240,7 +240,102 @@ namespace Thetis
             if (!ds.Tables.Contains("TXProfileDef"))
                 AddTXProfileTable("TXProfileDef", true);
 
+            VerifyTXProfileColumns();
+
             WriteDB();
+        }
+
+        // Yurij-eu2av - 2026-07-08: ensure any newly-added TXProfile columns exist
+        // (migration helper for databases created before new features were added).
+        private static void VerifyTXProfileColumns()
+        {
+            foreach (string tableName in new[] { "TXProfile", "TXProfileDef" })
+            {
+                if (!ds.Tables.Contains(tableName)) continue;
+                DataTable t = ds.Tables[tableName];
+                if (!t.Columns.Contains("CFCPhaseRotatorAuto"))
+                    t.Columns.Add("CFCPhaseRotatorAuto", typeof(bool));
+            }
+        }
+
+        // Yurij-eu2av - 2026-07-09: validate DB schema/data so old/incomplete databases can be
+        // detected and upgraded automatically instead of crashing at runtime.
+        /// <summary>
+        /// Checks whether the loaded database has the schema and data expected by the current
+        /// version of Thetis. Used to trigger an automatic upgrade when the VersionNumber alone
+        /// has not changed (for example after adding new columns/settings).
+        /// </summary>
+        public static bool IsDatabaseCompatible(out string reason)
+        {
+            reason = "";
+
+            if (ds == null)
+            {
+                reason = "Dataset is null.";
+                return false;
+            }
+
+            // Required tables
+            foreach (string tableName in new[] { "TXProfile", "TXProfileDef", "State" })
+            {
+                if (!ds.Tables.Contains(tableName))
+                {
+                    reason = $"Required table '{tableName}' is missing.";
+                    return false;
+                }
+            }
+
+            DataTable txp = ds.Tables["TXProfile"];
+            DataTable txpDef = ds.Tables["TXProfileDef"];
+
+            // TXProfile must contain all columns defined in TXProfileDef
+            foreach (DataColumn col in txpDef.Columns)
+            {
+                if (!txp.Columns.Contains(col.ColumnName))
+                {
+                    reason = $"TXProfile table is missing column '{col.ColumnName}'.";
+                    return false;
+                }
+            }
+
+            // There must be a Default row to supply values during repair
+            DataRow[] defaultRows = txpDef.Select("Name = 'Default'");
+            if (defaultRows.Length == 0)
+            {
+                reason = "TXProfileDef table has no 'Default' row.";
+                return false;
+            }
+
+            // No required column may be DBNull in any TXProfile row
+            foreach (DataRow row in txp.Rows)
+            {
+                if (row.RowState == DataRowState.Deleted) continue;
+
+                string profileName = row.Table.Columns.Contains("Name") ? Convert.ToString(row["Name"]) : "<unknown>";
+                foreach (DataColumn col in txpDef.Columns)
+                {
+                    if (row.IsNull(col.ColumnName))
+                    {
+                        reason = $"TXProfile '{profileName}' has no value for '{col.ColumnName}'.";
+                        return false;
+                    }
+                }
+            }
+
+            // State table must contain version info
+            Dictionary<string, string> state = GetVarsDictionary("State");
+            if (!state.ContainsKey("VersionNumber"))
+            {
+                reason = "State table is missing VersionNumber.";
+                return false;
+            }
+            if (!state.ContainsKey("Version"))
+            {
+                reason = "State table is missing Version.";
+                return false;
+            }
+
+            return true;
         }
 
         #region BandStack2
@@ -4493,7 +4588,7 @@ namespace Thetis
             t.Columns.Add("VAC2_Exclusive_Out", typeof(bool));
             //
 
-            // CFC
+            // CFC — Yurij-eu2av - 2026-07-08: added Phase Rotator auto-mode column.
             t.Columns.Add("CFCUseLegacy", typeof(bool));
 
             t.Columns.Add("CFCEnabled", typeof(bool));
@@ -4503,6 +4598,7 @@ namespace Thetis
             
             t.Columns.Add("CFCPhaseRotatorFreq", typeof(int));
             t.Columns.Add("CFCPhaseRotatorStages", typeof(int));
+            t.Columns.Add("CFCPhaseRotatorAuto", typeof(bool));
 
             t.Columns.Add("CFCPreComp", typeof(int));
             t.Columns.Add("CFCPostEqGain", typeof(int));
@@ -4734,6 +4830,7 @@ namespace Thetis
 
             dr["CFCPhaseRotatorFreq"] = 338;
             dr["CFCPhaseRotatorStages"] = 8;
+            dr["CFCPhaseRotatorAuto"] = false;
 
             dr["CFCPreComp"] = 0;
             dr["CFCPostEqGain"] = 0;
@@ -4967,6 +5064,7 @@ namespace Thetis
 
             dr["CFCPhaseRotatorFreq"] = 338;
             dr["CFCPhaseRotatorStages"] = 8;
+            dr["CFCPhaseRotatorAuto"] = false;
 
             dr["CFCPreComp"] = 0;
             dr["CFCPostEqGain"] = 0;
@@ -5201,6 +5299,7 @@ namespace Thetis
 
                 dr["CFCPhaseRotatorFreq"] = 338;
                 dr["CFCPhaseRotatorStages"] = 8;
+            dr["CFCPhaseRotatorAuto"] = false;
 
                 dr["CFCPreComp"] = 0;
                 dr["CFCPostEqGain"] = 0;
@@ -5434,6 +5533,7 @@ namespace Thetis
 
                 dr["CFCPhaseRotatorFreq"] = 338;
                 dr["CFCPhaseRotatorStages"] = 8;
+            dr["CFCPhaseRotatorAuto"] = false;
 
                 dr["CFCPreComp"] = 0;
                 dr["CFCPostEqGain"] = 0;
@@ -5666,6 +5766,7 @@ namespace Thetis
 
                 dr["CFCPhaseRotatorFreq"] = 338;
                 dr["CFCPhaseRotatorStages"] = 8;
+            dr["CFCPhaseRotatorAuto"] = false;
 
                 dr["CFCPreComp"] = 0;
                 dr["CFCPostEqGain"] = 0;
@@ -5898,6 +5999,7 @@ namespace Thetis
 
                 dr["CFCPhaseRotatorFreq"] = 338;
                 dr["CFCPhaseRotatorStages"] = 8;
+            dr["CFCPhaseRotatorAuto"] = false;
 
                 dr["CFCPreComp"] = 0;
                 dr["CFCPostEqGain"] = 0;
@@ -6130,6 +6232,7 @@ namespace Thetis
 
                 dr["CFCPhaseRotatorFreq"] = 338;
                 dr["CFCPhaseRotatorStages"] = 8;
+            dr["CFCPhaseRotatorAuto"] = false;
 
                 dr["CFCPreComp"] = 0;
                 dr["CFCPostEqGain"] = 0;
@@ -6362,6 +6465,7 @@ namespace Thetis
 
                 dr["CFCPhaseRotatorFreq"] = 338;
                 dr["CFCPhaseRotatorStages"] = 8;
+            dr["CFCPhaseRotatorAuto"] = false;
 
                 dr["CFCPreComp"] = 0;
                 dr["CFCPostEqGain"] = 0;
@@ -6594,6 +6698,7 @@ namespace Thetis
 
                 dr["CFCPhaseRotatorFreq"] = 338;
                 dr["CFCPhaseRotatorStages"] = 8;
+            dr["CFCPhaseRotatorAuto"] = false;
 
                 dr["CFCPreComp"] = 0;
                 dr["CFCPostEqGain"] = 0;
@@ -6826,6 +6931,7 @@ namespace Thetis
 
                 dr["CFCPhaseRotatorFreq"] = 338;
                 dr["CFCPhaseRotatorStages"] = 8;
+            dr["CFCPhaseRotatorAuto"] = false;
 
                 dr["CFCPreComp"] = 0;
                 dr["CFCPostEqGain"] = 0;
@@ -7058,6 +7164,7 @@ namespace Thetis
 
                 dr["CFCPhaseRotatorFreq"] = 338;
                 dr["CFCPhaseRotatorStages"] = 8;
+            dr["CFCPhaseRotatorAuto"] = false;
 
                 dr["CFCPreComp"] = 0;
                 dr["CFCPostEqGain"] = 0;
@@ -7290,6 +7397,7 @@ namespace Thetis
 
                 dr["CFCPhaseRotatorFreq"] = 338;
                 dr["CFCPhaseRotatorStages"] = 8;
+            dr["CFCPhaseRotatorAuto"] = false;
 
                 dr["CFCPreComp"] = 0;
                 dr["CFCPostEqGain"] = 0;
@@ -7522,6 +7630,7 @@ namespace Thetis
 
                 dr["CFCPhaseRotatorFreq"] = 338;
                 dr["CFCPhaseRotatorStages"] = 8;
+            dr["CFCPhaseRotatorAuto"] = false;
 
                 dr["CFCPreComp"] = 0;
                 dr["CFCPostEqGain"] = 0;
@@ -7754,6 +7863,7 @@ namespace Thetis
 
                 dr["CFCPhaseRotatorFreq"] = 338;
                 dr["CFCPhaseRotatorStages"] = 8;
+            dr["CFCPhaseRotatorAuto"] = false;
 
                 dr["CFCPreComp"] = 0;
                 dr["CFCPostEqGain"] = 0;
@@ -7986,6 +8096,7 @@ namespace Thetis
 
                 dr["CFCPhaseRotatorFreq"] = 338;
                 dr["CFCPhaseRotatorStages"] = 8;
+            dr["CFCPhaseRotatorAuto"] = false;
 
                 dr["CFCPreComp"] = 0;
                 dr["CFCPostEqGain"] = 0;
@@ -8218,6 +8329,7 @@ namespace Thetis
 
                 dr["CFCPhaseRotatorFreq"] = 338;
                 dr["CFCPhaseRotatorStages"] = 8;
+            dr["CFCPhaseRotatorAuto"] = false;
 
                 dr["CFCPreComp"] = 0;
                 dr["CFCPostEqGain"] = 0;
@@ -8450,6 +8562,7 @@ namespace Thetis
 
                 dr["CFCPhaseRotatorFreq"] = 338;
                 dr["CFCPhaseRotatorStages"] = 8;
+            dr["CFCPhaseRotatorAuto"] = false;
 
                 dr["CFCPreComp"] = 0;
                 dr["CFCPostEqGain"] = 0;
@@ -8682,6 +8795,7 @@ namespace Thetis
 
                 dr["CFCPhaseRotatorFreq"] = 338;
                 dr["CFCPhaseRotatorStages"] = 8;
+            dr["CFCPhaseRotatorAuto"] = false;
 
                 dr["CFCPreComp"] = 6;
                 dr["CFCPostEqGain"] = -6;
@@ -8914,6 +9028,7 @@ namespace Thetis
 
                 dr["CFCPhaseRotatorFreq"] = 338;
                 dr["CFCPhaseRotatorStages"] = 8;
+            dr["CFCPhaseRotatorAuto"] = false;
 
                 dr["CFCPreComp"] = 6;
                 dr["CFCPostEqGain"] = -7;
@@ -9146,6 +9261,7 @@ namespace Thetis
 
                 dr["CFCPhaseRotatorFreq"] = 338;
                 dr["CFCPhaseRotatorStages"] = 8;
+            dr["CFCPhaseRotatorAuto"] = false;
 
                 dr["CFCPreComp"] = 7;
                 dr["CFCPostEqGain"] = -6;
@@ -9378,6 +9494,7 @@ namespace Thetis
 
                 dr["CFCPhaseRotatorFreq"] = 338;
                 dr["CFCPhaseRotatorStages"] = 9;
+            dr["CFCPhaseRotatorAuto"] = false;
 
                 dr["CFCPreComp"] = 6;
                 dr["CFCPostEqGain"] = -8;

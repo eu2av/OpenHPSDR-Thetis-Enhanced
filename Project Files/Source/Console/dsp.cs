@@ -37,6 +37,7 @@ warren@wpratt.com
 // Richard Samphire can be reached by email at :  mw0lge@grange-lane.co.uk                    //
 //============================================================================================//
 
+// Yurij_eu2av: Q-factor EQ/CFCOMP P/Invoke signatures
 namespace Thetis
 {
     using System;
@@ -756,7 +757,7 @@ namespace Thetis
         public static extern void SetTXACFCOMPRun(int channel, int run);
 
         [DllImport("wdsp.dll", EntryPoint = "SetTXACFCOMPprofile", CallingConvention = CallingConvention.Cdecl)]
-        public static extern void SetTXACFCOMPprofile(int channel, int nfreqs, double* F, double* G, double* E, double* Gq, double* Eq);
+        public static extern void SetTXACFCOMPprofile(int channel, int nfreqs, double* F, double* G, double* E, double* Qg, double* Qe);
 
         [DllImport("wdsp.dll", EntryPoint = "SetTXACFCOMPPosition", CallingConvention = CallingConvention.Cdecl)]
         public static extern void SetTXACFCOMPPosition(int channel, int pos);
@@ -783,6 +784,24 @@ namespace Thetis
         [DllImport("wdsp.dll", EntryPoint = "SetTXAPHROTReverse", CallingConvention = CallingConvention.Cdecl)]
         public static extern void SetTXAPHROTReverse(int channel, int reverse);
 
+        // Yurij-eu2av - 2026-07-08: WDSP 2.00 Phase Rotator control imports.
+        [DllImport("wdsp.dll", EntryPoint = "SetTXAPHROTAutoMode", CallingConvention = CallingConvention.Cdecl)]
+        public static extern void SetTXAPHROTAutoMode(int channel, int autoMode);
+
+        [DllImport("wdsp.dll", EntryPoint = "SetTXAPHROTAutoReset", CallingConvention = CallingConvention.Cdecl)]
+        public static extern void SetTXAPHROTAutoReset(int channel);
+
+        [DllImport("wdsp.dll", EntryPoint = "GetTXAPHROTAsymmetry", CallingConvention = CallingConvention.Cdecl)]
+        public static extern void GetTXAPHROTAsymmetry(int channel,
+                                                       double* in_pos,
+                                                       double* in_neg,
+                                                       double* in_ratio,
+                                                       double* out_pos,
+                                                       double* out_neg,
+                                                       double* out_ratio,
+                                                       double* current_fc,
+                                                       double* auto_step);
+
         // TXEQ
         [DllImport("wdsp.dll", EntryPoint = "SetTXAEQProfile", CallingConvention = CallingConvention.Cdecl)]
         public static extern void SetTXAEQProfile(int channel, int nfreqs, double* F, double* G, double* Q);
@@ -790,10 +809,6 @@ namespace Thetis
         // RXEQ
         [DllImport("wdsp.dll", EntryPoint = "SetRXAEQProfile", CallingConvention = CallingConvention.Cdecl)]
         public static extern void SetRXAEQProfile(int channel, int nfreqs, double* F, double* G, double* Q);
-
-        // GetTXACFCOMPGainAndMask
-        [DllImport("wdsp.dll", EntryPoint = "GetTXACFCOMPGainAndMask", CallingConvention = CallingConvention.Cdecl)]
-        public static extern void GetTXACFCOMPGainAndMask(int channel, double* gain_values, double* mask_values, int* ready);
 
         // GetTXACFCOMPDisplayCompression
         [DllImport("wdsp.dll", EntryPoint = "GetTXACFCOMPDisplayCompression", CallingConvention = CallingConvention.Cdecl)]

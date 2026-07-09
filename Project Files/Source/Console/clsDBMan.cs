@@ -388,8 +388,14 @@ namespace Thetis
                         ok = DB.Init();
                         _ignore_written = false;
 
-                        //check version
-                        if(ok) checkVersion(made_new, ctrl_key_force_update, updateFile);
+                        //check version / schema compatibility
+                        // Yurij-eu2av - 2026-07-09: detect old/incomplete DB schema and ask user
+                        // for consent before running the upgrade+merge process.
+                        if (ok)
+                        {
+                            bool schema_mismatch = !DB.IsDatabaseCompatible(out string mismatch_reason);
+                            ok = checkVersion(made_new, ctrl_key_force_update, updateFile, schema_mismatch, mismatch_reason);
+                        }
 
                         if(ok) // note, the TakeBackup above will not prune, as the DB has not been recovered for the flag PruneBackups
                         {
@@ -460,7 +466,9 @@ namespace Thetis
             catch { return false; }
         }
 
-        private static void checkVersion(bool made_new, bool force_upgrade = false, bool force_upgrade_via_file = false)
+        // Yurij-eu2av - 2026-07-09: added schema-mismatch detection, Yes/No consent dialog,
+        // and pre-upgrade backup before the DB merge process.
+        private static bool checkVersion(bool made_new, bool force_upgrade = false, bool force_upgrade_via_file = false, bool schema_mismatch = false, string schema_mismatch_reason = "")
         {
             string version;
             Dictionary<string, string> vals = DB.GetVarsDictionary("State");
@@ -469,16 +477,42 @@ namespace Thetis
             else
                 version = "? version";
 
-            if (made_new) return;
-            if (!force_upgrade && Common.GetVerNum() == version) return; // same version, dont need to do anything
+            if (made_new) return true;
 
-            string force_info = force_upgrade ? "Force database update requested.\n\n" : "";
-            
-            DialogResult dr = MessageBox.Show(force_info + "This version [" + Common.GetVerNum() + "] of Thetis requires your database [" + version + "] to be updated.\n\n" +
-                "A new updated database will be created, and your old database merged into it. It will be made active.",
-                "Database Manager",
-                MessageBoxButtons.OK,
-                MessageBoxIcon.Information, MessageBoxDefaultButton.Button1, Common.MB_TOPMOST);
+            bool upgrade_needed = force_upgrade || force_upgrade_via_file || schema_mismatch || Common.GetVerNum() != version;
+            if (!upgrade_needed) return true; // same version and compatible schema, nothing to do
+
+            string reason = "";
+            if (force_upgrade)
+                reason = "Force database update requested.\n\n";
+            else if (schema_mismatch)
+                reason = "The database is missing data required by this version of Thetis.\n" + schema_mismatch_reason + "\n\n";
+
+            DialogResult dr = MessageBox.Show(
+                reason +
+                "This version [" + Common.GetVerNum() + "] of Thetis requires your database [" + version + "] to be updated.\n\n" +
+                "A backup of your current database will be created before the update.\n\n" +
+                "A new updated database will be created, and your old database merged into it. It will be made active.\n\n" +
+                "Do you want to proceed?",
+                "Database Update Required",
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Warning, MessageBoxDefaultButton.Button2, Common.MB_TOPMOST);
+
+            if (dr != DialogResult.Yes)
+            {
+                MessageBox.Show(
+                    "Thetis cannot continue with an incompatible database.\n\n" +
+                    "You can restart and hold Ctrl while launching to force an update, " +
+                    "create an empty file named 'updatedb.txt' in the data folder, " +
+                    "or use the Database Manager to restore a backup.",
+                    "Database Update Declined",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Information, MessageBoxDefaultButton.Button1, Common.MB_TOPMOST);
+                return false;
+            }
+
+            // Backup before any changes
+            TakeBackup(Guid.Empty, "PreUpgrade", true);
 
             Guid guid_original = _dbman_settings == null ? Guid.Empty : _dbman_settings.ActiveDB_GUID;
 
@@ -519,6 +553,8 @@ namespace Thetis
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Error, MessageBoxDefaultButton.Button1, Common.MB_TOPMOST);
             }
+
+            return ok;
         }
         private static void moveToBroken(Guid guid)
         {

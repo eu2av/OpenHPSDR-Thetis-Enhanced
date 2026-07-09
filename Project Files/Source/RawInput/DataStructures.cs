@@ -77,6 +77,7 @@ namespace RawInput_dll
 
     struct BroadcastDeviceInterface
     {
+#pragma warning disable CS0649 // поля используются только для маршалинга нативной структуры
         // ReSharper disable NotAccessedField.Global
         // ReSharper disable UnusedField.Compiler
         public Int32 DbccSize;
@@ -86,6 +87,7 @@ namespace RawInput_dll
         public char DbccName;
         // ReSharper restore NotAccessedField.Global
         // ReSharper restore UnusedField.Compiler
+#pragma warning restore CS0649
     }
 
     [StructLayout(LayoutKind.Sequential)]

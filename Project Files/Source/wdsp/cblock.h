@@ -24,6 +24,8 @@ warren@wpratt.com
 
 */
 
+// Yurij_eu2av: Thetis patch ported to WDSP 2.00
+
 #ifndef _cblock_h
 #define _cblock_h
 

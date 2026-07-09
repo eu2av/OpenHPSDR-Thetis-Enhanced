@@ -115,15 +115,15 @@ void create_txa (int channel)
 	txa[channel].eqp.p = create_eqp (
 		0,											// run - OFF by default
 		ch[channel].dsp_size,						// size
-		max(2048, ch[channel].dsp_size),			// number of filter coefficients
-		0,											// minimum phase flag
+		max(16384, ch[channel].dsp_size),			// number of filter coefficients
+		1,											// minimum phase flag
 		txa[channel].midbuff,						// pointer to input buffer
 		txa[channel].midbuff,						// pointer to output buffer
 		10,											// nfreqs
 		default_F,									// vector of frequencies
 		default_G,									// vector of gain values
 		0,											// cutoff mode
-		0,											// wintype
+		2,											// wintype
 		ch[channel].dsp_rate);						// samplerate
 	}
 
@@ -206,16 +206,18 @@ void create_txa (int channel)
 		ch[channel].dsp_size,						// size
 		txa[channel].midbuff,						// input buffer
 		txa[channel].midbuff,						// output buffer
-		2048,										// fft size
+		max(16384, ch[channel].dsp_size),			// fft size
 		4,											// overlap
 		ch[channel].dsp_rate,						// samplerate
 		1,											// window type
 		0,											// compression method
-		5,											// nfreqs
+		5,											// nfreqsG
+		5,                                          // nfreqsE
 		0.0,										// pre-compression
 		0.0,										// pre-postequalization
-		default_F,									// frequency array
+		default_F,									// compressor frequency array
 		default_G,									// compression array
+		default_F,									// post-eq frequency array
 		default_E,									// eq array
 		0.25,										// metering time constant
 		0.50);										// display time constant
@@ -402,34 +404,34 @@ void create_txa (int channel)
 		16384,										// fft size for spectrum
 		1);											// specmode
 
-	txa[channel].calcc.p = create_calcc (			
+	txa[channel].calcc.p = create_calcc(
 		channel,									// channel number
 		1,											// run calibration
-		1024,										// input buffer size
-		ch[channel].in_rate,						// samplerate
-		16,											// ints
-		256,										// spi
-		(1.0 / 0.4072),								// hw_scale
-		0.1,										// mox delay
-		0.0,										// loop delay
-		0.8,										// ptol
-		0,											// mox
-		0,											// solidmox
-		1,											// pin mode
-		1,											// map mode
-		0,											// stbl mode
-		256,										// pin samples
-		0.9);										// alpha
+		1024,											// input buffer size
+		ch[channel].in_rate,							// samplerate
+		16,												// ints
+		256,											// spi
+		(1.0 / 0.2899),								// hw_scale
+		0.1,											// mox delay
+		0.0,											// loop delay
+		0.8,											// ptol
+		0,												// mox
+		0,												// solidmox
+		1,												// pin mode
+		0,												// map mode
+		1,												// stbl mode
+		256,											// pin samples
+		0.0);										// EMA alpha = 0.0 (UI 1.0 = no smoothing)
 
-	txa[channel].iqc.p0 = txa[channel].iqc.p1 = create_iqc (
+	txa[channel].iqc.p0 = txa[channel].iqc.p1 = create_iqc(
 		0,											// run
 		ch[channel].dsp_size,						// size
 		txa[channel].midbuff,						// input buffer
 		txa[channel].midbuff,						// output buffer
 		(double)ch[channel].dsp_rate,				// sample rate
-		16,											// ints
-		0.005,										// changeover time
-		256);										// spi
+		16,												// ints
+		0.005,											// changeover time
+		256);
 
 	txa[channel].cfir.p = create_cfir(
 		0,											// run
@@ -484,8 +486,8 @@ void destroy_txa (int channel)
 	destroy_meter (txa[channel].outmeter.p);
 	destroy_resample (txa[channel].rsmpout.p);
 	destroy_cfir(txa[channel].cfir.p);
-	destroy_calcc(txa[channel].calcc.p);
-	destroy_iqc (txa[channel].iqc.p0);	
+	destroy_calcc (txa[channel].calcc.p);
+	destroy_iqc (txa[channel].iqc.p0);
 	destroy_siphon (txa[channel].sip1.p);
 	destroy_meter (txa[channel].alcmeter.p);
 	destroy_uslew (txa[channel].uslew.p);
@@ -554,6 +556,7 @@ void flush_txa (int channel)
 	flush_meter (txa[channel].outmeter.p);
 }
 
+//void xsnoop(channel);
 void xtxa (int channel)
 {
 	xresample (txa[channel].rsmpin.p);				// input resampler
@@ -586,6 +589,7 @@ void xtxa (int channel)
 	xsiphon (txa[channel].sip1.p, 0);				// siphon data for display
 	xiqc (txa[channel].iqc.p0);						// PureSignal correction
 	xcfir(txa[channel].cfir.p);						// compensating FIR filter (used Protocol_2 only)
+	//xsnoop(channel);
 	xresample (txa[channel].rsmpout.p);				// output resampler
 	xmeter (txa[channel].outmeter.p);				// output meter
 	// print_peak_env ("env_exception.txt", ch[channel].dsp_outsize, txa[channel].outbuff, 0.7);
@@ -912,7 +916,6 @@ void TXASetNC (int channel, int nc)
 	int oldstate = SetChannelState (channel, 0, 1);
 	SetTXABandpassNC			(channel, nc);
 	SetTXAFMEmphNC				(channel, nc);
-	SetTXAEQNC					(channel, nc);
 	SetTXAFMNC					(channel, nc);
 	SetTXACFIRNC				(channel, nc);
 	SetChannelState (channel, oldstate, 0);
@@ -923,7 +926,6 @@ void TXASetMP (int channel, int mp)
 {
 	SetTXABandpassMP			(channel, mp);
 	SetTXAFMEmphMP				(channel, mp);
-	SetTXAEQMP					(channel, mp);
 	SetTXAFMMP					(channel, mp);
 }
 

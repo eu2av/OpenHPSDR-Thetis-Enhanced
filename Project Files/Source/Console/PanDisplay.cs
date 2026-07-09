@@ -1101,7 +1101,6 @@ namespace Thetis
         // Drawing Routines
         // ======================================================
 
-        float zoom_height = 1.5f;   // Should be > 1.  H = H/zoom_height
         unsafe private void DrawPanadapterGrid(Graphics g, int rx)
         {
             int W = panRect.Width;
@@ -1113,7 +1112,6 @@ namespace Thetis
             // g.FillRectangle(display_background_brush, 0, bottom ? H : 0, W, H);
 
             bool local_mox = false;
-            bool displayduplex = false;
            // if (mox && rx == 1 && !tx_on_vfob) local_mox = true;
            // if (mox && rx == 2 && tx_on_vfob) local_mox = true;
             //if (rx == 1 && tx_on_vfob && mox && !rx2_enabled) local_mox = true;
@@ -1130,10 +1128,6 @@ namespace Thetis
             int grid_step = 0; // spectrum_grid_step;
             int f_diff = 0;
             long vfo_hz = _vfo_hz; //cmaster.Getrxa(display_id + 2).RXFreq;// 
-
-            if ((CurrentDisplayMode == DisplayMode.PANAFALL && (nreceivers <= 2 && display_duplex)) ||
-                (CurrentDisplayMode == DisplayMode.PANAFALL && nreceivers > 2) ||
-               (CurrentDisplayMode == DisplayMode.PANADAPTER && display_duplex)) displayduplex = true;
 
             //if (local_mox && !displayduplex)// || (mox && tx_on_vfob))
             //{
@@ -1436,15 +1430,6 @@ namespace Thetis
             double vfo;
             vfo = vfo_hz + rit_hz;
             int rxn = rx;
-            int rn = 0;
-            if (rx == 4)
-                rn = 4;
-            if (rx == 5)
-                rn = 5;
-            if (rx == 6)
-                rn = 6;
-
-
             switch (rx_dsp_mode)
             {
                 case DSPMode.CWL:
@@ -2029,7 +2014,6 @@ namespace Thetis
                     points = new Point[W];			// array of points to display
             }
             float slope = 0.0F;						// samples to process per pixel
-            int num_samples = 0;					// number of samples to process
             int start_sample_index = 0;				// index to begin looking at samples
             int Low = 0;// rx_display_low;
             int High = 0;// rx_display_high;
@@ -3428,24 +3412,12 @@ namespace Thetis
             // panadapter_bmp = new Bitmap(panRect.Width, panRect.Height, PixelFormat.Format24bppRgb);	// initialize waterfall display
         }
 
-        private int snapMouse = 3;
         private DisplayRegion mouseRegion;
 
-        private bool rx1_low_filter_drag = false;
-        private bool rx1_high_filter_drag = false;
-        private bool rx1_whole_filter_drag = false;
         private bool rx1_sub_drag = false;
         private bool rx1_spectrum_drag = false;
 
-        private int whole_filter_start_x = 0;
-        private int whole_filter_start_low = 0;
-        private int whole_filter_start_high = 0;
-        private int sub_drag_last_x = 0;
         private int spectrum_drag_last_x = 0;
-        private double sub_drag_start_freq = 0.0;
-
-        private bool rx1_click_tune_drag = false;
-        private bool rx2_click_tune_drag = false;
 
         private Point grid_minmax_drag_start_point = new Point(0, 0);
         //  private int grid_minmax_drag_max_delta_x = 0;
@@ -3456,10 +3428,7 @@ namespace Thetis
         private bool moveX = false;
         private bool moveY = false;
 
-        private bool rx1_grid_adjust = false;
         private bool gridmaxadjust = false;
-        private bool wfmaxadjust = false;
-        private bool wfminadjust = false;
         private bool gridminmaxadjust = false;
 
         private void getRegion(Point p)
@@ -3472,12 +3441,12 @@ namespace Thetis
             {
                 mouseRegion = DisplayRegion.dBmScalePanadapterRegion;
             }
-            else if (Math.Abs(p.X - this.FilterRect.Left) < snapMouse && this.PanRect.Contains(p))
+            else if (Math.Abs(p.X - this.FilterRect.Left) < 3 && this.PanRect.Contains(p))
             {
                 mouseRegion = DisplayRegion.filterRegionLow;
                 // mouseDownFilterFrequencyLo = filterLowerFrequency;
             }
-            else if (Math.Abs(p.X - this.FilterRect.Right) < snapMouse && this.PanRect.Contains(p))
+            else if (Math.Abs(p.X - this.FilterRect.Right) < 3 && this.PanRect.Contains(p))
             {
                 mouseRegion = DisplayRegion.filterRegionHigh;
                 //  mouseDownFilterFrequencyHi = filterUpperFrequency;
@@ -3770,9 +3739,6 @@ namespace Thetis
                 //    case DisplayMode.PANAFALL:
                 //    case DisplayMode.PANASCOPE:
                 //    case DisplayMode.HISTOGRAM:
-                        rx1_low_filter_drag = false;
-                        rx1_high_filter_drag = false;
-                        rx1_whole_filter_drag = false;
                         // rx2_low_filter_drag = false;
                         // rx2_high_filter_drag = false;
                         // rx2_whole_filter_drag = false;
@@ -3787,7 +3753,6 @@ namespace Thetis
                         // agc_knee_drag_max_delta_x = 0;
                         // agc_knee_drag_max_delta_y = 0;
                         gridminmaxadjust = false;
-                        rx1_grid_adjust = false;
                         // rx2_grid_adjust = false;
                        // tx1_grid_adjust = false;
                         // tx2_grid_adjust = false;
@@ -3844,7 +3809,6 @@ namespace Thetis
                 //    case DisplayMode.SPECTRUM:
                         gridminmaxadjust = false;
                         gridmaxadjust = false;
-                        rx1_grid_adjust = false;
                         // rx2_grid_adjust = false;
                        // tx1_grid_adjust = false;
                         // tx2_grid_adjust = false;
@@ -4561,7 +4525,6 @@ namespace Thetis
             }
         }
 
-        private int avm = 0;
         private bool average_on = true;				// true if the Average button is depressed
         public bool AverageOn                           // set from Average button
         {
@@ -4569,9 +4532,6 @@ namespace Thetis
             set
             {
                 average_on = value;
-                if (peak_on) avm = -1;                  // -1 => peak_detect
-                else if (average_on) avm = 6;           //  6 => low_noise_floor, time_weighted, log_data
-                else avm = 0;                           //  0 => averaging & peak_detect are both OFF
                 initAnalyzer();
             }
         }
@@ -4583,9 +4543,6 @@ namespace Thetis
             set
             {
                 peak_on = value;
-                if (peak_on) avm = -1;
-                else if (average_on) avm = 6;
-                else avm = 0;
                 initAnalyzer();
             }
         }
