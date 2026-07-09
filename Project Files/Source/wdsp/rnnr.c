@@ -31,6 +31,8 @@ https://gitlab.xiph.org/xiph/rnnoise
 
 It uses a non modified version of rmnoise and implements a ringbuffer to handle input/output frame size differences.
 */
+
+// Yurij_eu2av: Thetis patch ported to WDSP 2.00
 //
 //============================================================================================//
 // Dual-Licensing Statement (Applies Only to Author's Contributions, Richard Samphire MW0LGE) //

@@ -31,7 +31,7 @@ void calc_icfir (ICFIR a)
 	double* impulse;
 	a->scale = 1.0 / (double)(2 * a->size);
 	impulse = icfir_impulse (a->nc, a->DD, a->R, a->Pairs, a->runrate, a->cicrate, a->cutoff, a->xtype, a->xbw, 1, a->scale, a->wintype);
-	a->p = create_fircore (a->size, a->in, a->out, a->nc, a->mp, impulse);
+	a->p = create_fircore (a->size, a->in, a->out, a->nc, a->mp, 16, impulse);
 	_aligned_free (impulse);
 }
 

@@ -78,6 +78,7 @@ namespace Thetis
 
         private static string name;
         private static string path;
+        private static string apf_skin_path = "";
         private const string pic_file_ext = ".png";
 
         private static Console m_objConsole;
@@ -135,6 +136,16 @@ namespace Thetis
         {
             path = p + "\\" + name;
             Skin.name = name;
+
+            // APF button skins live in their own independent folder next to the main Skins folder
+            try
+            {
+                string skinParent = Path.GetDirectoryName(path);
+                string skinGrandParent = Path.GetDirectoryName(skinParent);
+                if (!string.IsNullOrEmpty(skinGrandParent))
+                    apf_skin_path = skinGrandParent + "\\SkinsAPF";
+            }
+            catch { }
 
             if (File.Exists(path + "\\" + f.Name + "\\" + f.Name + pic_file_ext))
             {
@@ -997,15 +1008,96 @@ namespace Thetis
             }
         }
 
+        // Yurij-eu2av - 2026-07-09: support independent SkinsAPF folder as fallback for
+        // APF button images so existing skins don't need updating.
+        private static string getCheckBoxImagePath(CheckBox ctrl, int stateIndex)
+        {
+            string spath = path + "\\" + ctrl.TopLevelControl.Name + "\\" + ctrl.Name + "-" + stateIndex.ToString() + pic_file_ext;
+            if (File.Exists(spath)) return spath;
+            spath = path + "\\" + "Console" + "\\" + ctrl.Name + "-" + stateIndex.ToString() + pic_file_ext;
+            if (File.Exists(spath)) return spath;
+            // APF button skins are stored in an independent folder so existing skins do not need updating
+            if (ctrl.Name == "btnAPF_type")
+            {
+                if (!string.IsNullOrEmpty(apf_skin_path))
+                {
+                    spath = apf_skin_path + "\\" + ctrl.Name + "-" + stateIndex.ToString() + pic_file_ext;
+                    if (File.Exists(spath)) return spath;
+                }
+                // also support a portable SkinsAPF folder next to the executable
+                string portablePath = Application.StartupPath + "\\SkinsAPF";
+                if (portablePath != apf_skin_path)
+                {
+                    spath = portablePath + "\\" + ctrl.Name + "-" + stateIndex.ToString() + pic_file_ext;
+                    if (File.Exists(spath)) return spath;
+                }
+            }
+            return null;
+        }
+
+        // Yurij-eu2av - 2026-07-09: generate default APF button PNGs when SkinsAPF folder is missing.
+        private static void GenerateAPFButtonImage(string folder, int stateIndex, Color backColor, Color borderColor)
+        {
+            int width = 36;
+            int height = 20;
+            using (Bitmap bmp = new Bitmap(width, height))
+            using (Graphics g = Graphics.FromImage(bmp))
+            {
+                g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
+                g.Clear(Color.Transparent);
+                using (Brush brush = new SolidBrush(backColor))
+                    g.FillRectangle(brush, 0, 0, width - 1, height - 1);
+                using (Pen pen = new Pen(borderColor, 1))
+                    g.DrawRectangle(pen, 0, 0, width - 1, height - 1);
+                bmp.Save(folder + "\\btnAPF_type-" + stateIndex.ToString() + pic_file_ext, ImageFormat.Png);
+            }
+        }
+
+        // Yurij-eu2av - 2026-07-09: create SkinsAPF folder with default images on first run.
+        private static void EnsureAPFSkinImages()
+        {
+            if (string.IsNullOrEmpty(apf_skin_path)) return;
+
+            bool allExist = true;
+            for (int i = 0; i < 8; i++)
+            {
+                if (!File.Exists(apf_skin_path + "\\btnAPF_type-" + i.ToString() + pic_file_ext))
+                {
+                    allExist = false;
+                    break;
+                }
+            }
+            if (allExist) return;
+
+            try
+            {
+                if (!Directory.Exists(apf_skin_path))
+                    Directory.CreateDirectory(apf_skin_path);
+
+                GenerateAPFButtonImage(apf_skin_path, 0, Color.FromArgb(40, 40, 40), Color.FromArgb(80, 80, 80));
+                GenerateAPFButtonImage(apf_skin_path, 1, Color.FromArgb(30, 30, 30), Color.FromArgb(100, 100, 100));
+                GenerateAPFButtonImage(apf_skin_path, 2, Color.FromArgb(50, 50, 50), Color.FromArgb(70, 70, 70));
+                GenerateAPFButtonImage(apf_skin_path, 3, Color.FromArgb(40, 40, 40), Color.FromArgb(80, 80, 80));
+                GenerateAPFButtonImage(apf_skin_path, 4, Color.FromArgb(45, 45, 45), Color.FromArgb(90, 90, 90));
+                GenerateAPFButtonImage(apf_skin_path, 5, Color.FromArgb(35, 35, 35), Color.FromArgb(100, 100, 100));
+                GenerateAPFButtonImage(apf_skin_path, 6, Color.FromArgb(55, 55, 55), Color.FromArgb(100, 100, 100));
+                GenerateAPFButtonImage(apf_skin_path, 7, Color.FromArgb(35, 35, 35), Color.FromArgb(100, 100, 100));
+            }
+            catch { }
+        }
+
+        // Yurij-eu2av - 2026-07-09: modified to use getCheckBoxImagePath() and to keep the
+        // flat background transparent when skin images are present.
         private static void SetupCheckBoxImages(CheckBox ctrl)
         {
+            if (ctrl.Name == "btnAPF_type")
+                EnsureAPFSkinImages();
+
             string skey = "";
             for (int i=0; i<8; i++)
             {
-                string spath = path + "\\" + ctrl.TopLevelControl.Name + "\\" + ctrl.Name + "-" + i.ToString() + pic_file_ext;
-                if (!File.Exists(spath))
-                    spath = path + "\\" + "Console" + "\\" + ctrl.Name + "-" + i.ToString() + pic_file_ext;
-                if (File.Exists(spath))
+                string spath = getCheckBoxImagePath(ctrl, i);
+                if (!string.IsNullOrEmpty(spath))
                 {
                     Image img = loadImage(spath); // load to cache it
                     if (_image_cache_map.ContainsKey(spath))
@@ -1028,13 +1120,10 @@ namespace Thetis
                 for (int i = 0; i < 8; i++)
                 {
                     string sstate = ((ImageState)i).ToString();
-                    string spath = path + "\\" + ctrl.TopLevelControl.Name + "\\" + ctrl.Name + "-" + i.ToString() + pic_file_ext;
-                    Image img = getImageFromFilePath(spath);
-                    if (img == null)
-                    {
-                        spath = path + "\\" + "Console" + "\\" + ctrl.Name + "-" + i.ToString() + pic_file_ext;
+                    string spath = getCheckBoxImagePath(ctrl, i);
+                    Image img = null;
+                    if (!string.IsNullOrEmpty(spath))
                         img = getImageFromFilePath(spath);
-                    }
                     if (img != null && !_shared_image_lists[skey].Images.ContainsKey(sstate))
                     {
                         img = resizeImage(img, ctrl);
@@ -1043,6 +1132,15 @@ namespace Thetis
                 }
             }
             if (ctrl.ImageList == null) ctrl.ImageList = new ImageList(); // just assign one, it wont be used as no images were found
+
+            // when skin images are present, keep the flat background transparent so the image shows through
+            if (ctrl.ImageList.Images.Count > 0)
+            {
+                ctrl.BackColor = Color.Transparent;
+                ctrl.FlatAppearance.CheckedBackColor = Color.Transparent;
+                ctrl.FlatAppearance.MouseOverBackColor = Color.Transparent;
+                ctrl.FlatAppearance.MouseDownBackColor = Color.Transparent;
+            }
 
             setupCheckBoxHandlers(ctrl);
            

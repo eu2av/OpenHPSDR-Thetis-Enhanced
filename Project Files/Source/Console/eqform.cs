@@ -39,6 +39,7 @@
 // Richard Samphire can be reached by email at :  mw0lge@grange-lane.co.uk                    //
 //============================================================================================//
 
+// Yurij_eu2av: Q-factor EQ/CFCOMP call site updates
 namespace Thetis
 {
     using System;
@@ -2807,7 +2808,7 @@ namespace Thetis
             {
                 fixed (double* Fptr = &F[0], Gptr = &G[0])
                 {
-                    WDSP.SetTXAEQProfile(WDSP.id(1, 0), nfreqs, Fptr, Gptr, null);
+                    WDSP.SetTXAEQProfile(WDSP.id(1, 0), nfreqs, Fptr, Gptr, (double*)0);
                 }
             }
 
@@ -3020,12 +3021,25 @@ namespace Thetis
             {
                 _wdspIsBusy = true;
 
+                bool useQ = _state.RX_ParametricEQ;
+
                 unsafe
                 {
-                    fixed (double* Fptr = &F[0], Gptr = &G[0], Qptr = &Q[0])
+                    fixed (double* Fptr = &F[0], Gptr = &G[0])
                     {
-                        WDSP.SetRXAEQProfile(WDSP.id(0, 0), nfreqs, Fptr, Gptr, _state.RX_ParametricEQ ? Qptr : null);
-                        WDSP.SetRXAEQProfile(WDSP.id(0, 1), nfreqs, Fptr, Gptr, _state.RX_ParametricEQ ? Qptr : null);
+                        if (useQ)
+                        {
+                            fixed (double* Qptr = &Q[0])
+                            {
+                                WDSP.SetRXAEQProfile(WDSP.id(0, 0), nfreqs, Fptr, Gptr, Qptr);
+                                WDSP.SetRXAEQProfile(WDSP.id(0, 1), nfreqs, Fptr, Gptr, Qptr);
+                            }
+                        }
+                        else
+                        {
+                            WDSP.SetRXAEQProfile(WDSP.id(0, 0), nfreqs, Fptr, Gptr, (double*)0);
+                            WDSP.SetRXAEQProfile(WDSP.id(0, 1), nfreqs, Fptr, Gptr, (double*)0);
+                        }
                     }
                 }
 
@@ -3063,11 +3077,23 @@ namespace Thetis
             {
                 _wdspIsBusy = true;
 
+                bool useQ = _state.TX_ParametricEQ;
+
                 unsafe
                 {
-                    fixed (double* Fptr = &F[0], Gptr = &G[0], Qptr = &Q[0])
+                    fixed (double* Fptr = &F[0], Gptr = &G[0])
                     {
-                        WDSP.SetTXAEQProfile(WDSP.id(1, 0), nfreqs, Fptr, Gptr, _state.TX_ParametricEQ ? Qptr : null);
+                        if (useQ)
+                        {
+                            fixed (double* Qptr = &Q[0])
+                            {
+                                WDSP.SetTXAEQProfile(WDSP.id(1, 0), nfreqs, Fptr, Gptr, Qptr);
+                            }
+                        }
+                        else
+                        {
+                            WDSP.SetTXAEQProfile(WDSP.id(1, 0), nfreqs, Fptr, Gptr, (double*)0);
+                        }
                     }
                 }
 

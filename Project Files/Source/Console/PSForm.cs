@@ -44,6 +44,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
@@ -81,6 +82,8 @@ namespace Thetis
             _power = console.PowerOn;
 
             startPSThread(); // MW0LGE_21k8 removed the winform timers, now using dedicated thread
+
+            _psFormReady = true;
         }
 
         #endregion
@@ -107,6 +110,7 @@ namespace Thetis
         private int _deltadB = 0;
 
         private bool _power;
+        private bool _psFormReady = false;
 
         private enum eCMDState
         {
@@ -154,6 +158,20 @@ namespace Thetis
             get { return m_bQuckAttenuate; }
             set { m_bQuckAttenuate = value; }
         }
+
+        private int _ints = 16;
+        public int Ints
+        {
+            get { return _ints; }
+            set { _ints = value; }
+        }
+        private int _spi = 256;
+        public int Spi
+        {
+            get { return _spi; }
+            set { _spi = value; }
+        }
+
         public ToolTip ToolTip //[2.10.3.9]MW0LGE used by finder
         {
             get
@@ -348,25 +366,6 @@ namespace Thetis
             }
         }
 
-        private int _ints = 16;
-        public int Ints
-        {
-            get { return _ints; }
-            set
-            {
-                _ints = value;
-            }
-        }
-
-        private int _spi = 256;
-        public int Spi
-        {
-            get { return _spi; }
-            set
-            {
-                _spi = value;
-            }
-        }
 
         private void psdefpeak(double value)
         {
@@ -567,6 +566,23 @@ namespace Thetis
                 lblPSfb2.Text = puresignal.FeedbackLevel.ToString();
                 lblPSInfo5.Text = puresignal.CalibrationCount.ToString();
                 lblPSInfo6.Text = puresignal.Info[6].ToString();
+                // Yurij-eu2av - 2026-07-08: highlight severe PureSignal over-drive (info[6] == 2).
+                if (puresignal.Info[6] == 2)
+                {
+                    if (lblPSInfo6.BackColor != Color.Red)
+                    {
+                        lblPSInfo6.BackColor = Color.Red;
+                        lblPSInfo6.ForeColor = Color.White;
+                    }
+                }
+                else
+                {
+                    if (lblPSInfo6.BackColor != Color.Bisque)
+                    {
+                        lblPSInfo6.BackColor = Color.Bisque;
+                        lblPSInfo6.ForeColor = Color.Black;
+                    }
+                }
                 lblPSInfo13.Text = puresignal.Info[13].ToString();
                 lblPSInfo15.Text = puresignal.Info[15].ToString();
             }
@@ -742,7 +758,7 @@ namespace Thetis
                         double ddB;
                         if (puresignal.IsFeedbackLevelOK)
                         {
-                            ddB = 20.0 * Math.Log10((double)puresignal.FeedbackLevel / 152.293);
+                            ddB = 20.0 * Math.Log10((double)puresignal.FeedbackLevel / (double)puresignal.TargetFeedbackLevel);
                             if (Double.IsNaN(ddB)) ddB = 31.1;
                             if (ddB < -100.0) ddB = -100.0;
                             if (ddB > +100.0) ddB = +100.0;
@@ -758,6 +774,7 @@ namespace Thetis
 
                         // everything off and reset
                         puresignal.SetPSControl(_txachannel, 1, 0, 0, 0);
+                        LogAutoAttenuate($"MONITOR FB={puresignal.FeedbackLevel} ATT={console.SetupForm.ATTOnTX} ddB={ddB:F2} delta={_deltadB} OK={puresignal.IsFeedbackLevelOKRange} {PSInfoBits()}");
                     }
                     break;
                 case eAAState.SetNewValues:// 1: // set new values
@@ -771,16 +788,41 @@ namespace Thetis
                     if (oldAtten/*console.SetupForm.ATTOnTX*/ != newAtten)
                     {
                         console.SetupForm.ATTOnTX = newAtten;
+                        LogAutoAttenuate($"SETATT  old={oldAtten} new={newAtten} delta={_deltadB} FB={puresignal.FeedbackLevel} {PSInfoBits()}");
 
                         // give some additional time for the network msg to get to the radio before switching back on MW0LGE_21k9d5
                         if (m_bQuckAttenuate) Thread.Sleep(100);
+                    }
+                    else
+                    {
+                        LogAutoAttenuate($"SETATT  no change old={oldAtten} new={newAtten} delta={_deltadB} FB={puresignal.FeedbackLevel} {PSInfoBits()}");
                     }
                     break;
                 case eAAState.RestoreOperation:// 2: // restore operation
                     _autoAttenuateState = eAAState.Monitor;//0;
                     puresignal.SetPSControl(_txachannel, 0, _save_singlecalON, _save_autoON, 0);
+                    LogAutoAttenuate($"RESUME  FB={puresignal.FeedbackLevel} ATT={console.SetupForm.ATTOnTX} {PSInfoBits()}");
                     break;
             }
+        }
+
+        private static readonly object _psAutoAttenLogLock = new object();
+        private string PSInfoBits()
+        {
+            return $"I0={puresignal.Info[0]} I1={puresignal.Info[1]} I2={puresignal.Info[2]} I3={puresignal.Info[3]} I6={puresignal.Info[6]} C={puresignal.CalibrationCount} A={puresignal.Info[7]}";
+        }
+        private void LogAutoAttenuate(string message)
+        {
+            try
+            {
+                string path = Path.Combine(Application.StartupPath, "PSAutoAttenuate.log");
+                string line = $"{DateTime.UtcNow:yyyy-MM-dd HH:mm:ss.fff} {message}{Environment.NewLine}";
+                lock (_psAutoAttenLogLock)
+                {
+                    File.AppendAllText(path, line);
+                }
+            }
+            catch { }
         }
         #endregion
 
@@ -800,14 +842,6 @@ namespace Thetis
         public void UpdateWarningSetPk()
         {
             pbWarningSetPk.Visible = _PShwpeak != HardwareSpecific.PSDefaultPeak; //[2.10.3.7]MW0LGE show a warning if the setpk is different to what we expect for this hardware
-        }
-
-        private void chkPSRelaxPtol_CheckedChanged(object sender, EventArgs e)
-        {
-            if (chkPSRelaxPtol.Checked)
-                puresignal.SetPSPtol(_txachannel, 0.400);
-            else
-                puresignal.SetPSPtol(_txachannel, 0.800);
         }
 
         private void chkPSAutoAttenuate_CheckedChanged(object sender, EventArgs e)
@@ -830,32 +864,39 @@ namespace Thetis
             cmaster.PSLoopback = checkLoopback.Checked;
         }
 
-        private void chkPSPin_CheckedChanged(object sender, EventArgs e)
-        {
-            if (chkPSPin.Checked)
-                puresignal.SetPSPinMode(_txachannel, 1);
-            else
-                puresignal.SetPSPinMode(_txachannel, 0);
-        }
-
-        private void chkPSMap_CheckedChanged(object sender, EventArgs e)
-        {
-            if (chkPSMap.Checked)
-                puresignal.SetPSMapMode(_txachannel, 1);
-            else
-                puresignal.SetPSMapMode(_txachannel, 0);
-        }
-
         private void chkPSStbl_CheckedChanged(object sender, EventArgs e)
         {
+            // Yurij_eu2av: SetPSStabilize toggles CurveEMA smoothing in WDSP 2.00.
             if (chkPSStbl.Checked)
                 puresignal.SetPSStabilize(_txachannel, 1);
             else
                 puresignal.SetPSStabilize(_txachannel, 0);
         }
 
+        private void udPSEMAAlpha_ValueChanged(object sender, EventArgs e)
+        {
+            puresignal.SetPSEMAAlpha(_txachannel, (double)udPSEMAAlpha.Value);
+        }
+
+        private void udPSPinAlpha_ValueChanged(object sender, EventArgs e)
+        {
+            puresignal.SetPSPinAlpha(_txachannel, (double)udPSPinAlpha.Value);
+        }
+
+        private void chkPSPin_CheckedChanged(object sender, EventArgs e)
+        {
+            // Yurij_eu2av: Toggle COS/SIN start-point pin (WDSP 2.00 NURBS fit).
+            puresignal.SetPSPinMode(_txachannel, chkPSPin.Checked ? 1 : 0);
+        }
+
+        private void chkPSEQ_CheckedChanged(object sender, EventArgs e)
+        {
+            puresignal.SetPSEQEnable(_txachannel, chkPSEQ.Checked ? 1 : 0);
+        }
+
         private void comboPSTint_SelectedIndexChanged(object sender, EventArgs e)
         {
+            // Yurij_eu2av: WDSP 2.00 variable bucket configuration mapped to legacy TINT items.
             switch (comboPSTint.SelectedIndex)
             {
                 case 0:
@@ -883,6 +924,64 @@ namespace Thetis
                     btnPSSave.Enabled = btnPSRestore.Enabled = true;
                     break;
             }
+        }
+
+        private void udPSOutlierSigma_ValueChanged(object sender, EventArgs e)
+        {
+            if (_psFormReady && console != null && console.SetupForm != null)
+                console.SetupForm.PSOutlierSigma = (double)udPSOutlierSigma.Value;
+            if (chkPSOutlierEnable.Checked)
+                puresignal.SetPSOutlierSigma(_txachannel, (double)udPSOutlierSigma.Value);
+        }
+
+        private void chkPSOutlierEnable_CheckedChanged(object sender, EventArgs e)
+        {
+            if (_psFormReady && console != null && console.SetupForm != null)
+                console.SetupForm.PSOutlierEnable = chkPSOutlierEnable.Checked;
+            if (chkPSOutlierEnable.Checked)
+                puresignal.SetPSOutlierSigma(_txachannel, (double)udPSOutlierSigma.Value);
+            else
+                puresignal.SetPSOutlierSigma(_txachannel, 0.0);
+        }
+
+        private void udPSTargetFeedback_ValueChanged(object sender, EventArgs e)
+        {
+            puresignal.TargetFeedbackLevel = (int)udPSTargetFeedback.Value;
+            if (_psFormReady && console != null && console.SetupForm != null)
+                console.SetupForm.PSTargetFeedbackLevel = (int)udPSTargetFeedback.Value;
+        }
+
+        private void chkPSDCB_CheckedChanged(object sender, EventArgs e)
+        {
+            puresignal.SetPSDCBEnable(_txachannel, chkPSDCB.Checked ? 1 : 0);
+        }
+
+        private void udPSDCBCap_ValueChanged(object sender, EventArgs e)
+        {
+            puresignal.SetPSDCBCap(_txachannel, (double)udPSDCBCap.Value);
+        }
+
+        private void btnPSResetEngine_Click(object sender, EventArgs e)
+        {
+            SetPSAdvancedDefaults();
+        }
+
+        private void SetPSAdvancedDefaults()
+        {
+            // WDSP 2.00 PureSignal 3.0 recommended defaults
+            chkPSStbl.Checked = true;
+            udPSEMAAlpha.Value = 1.00m;
+            udPSPinAlpha.Value = 0.10m;
+            chkPSPin.Checked = true;
+            chkPSEQ.Checked = true;
+            comboPSTint.SelectedIndex = 0;
+            udPSOutlierSigma.Value = (decimal)console.SetupForm.PSOutlierSigma;
+            chkPSOutlierEnable.Checked = console.SetupForm.PSOutlierEnable;
+            udPSTargetFeedback.Value = console.SetupForm.PSTargetFeedbackLevel;
+            chkPSDCB.Checked = false;
+            udPSDCBCap.Value = 0.25m;
+
+            puresignal.ResetPSAdvancedParams(_txachannel);
         }
 
         private bool _advancedON = false; //MW0LGE_[2.9.0.7]
@@ -942,12 +1041,21 @@ namespace Thetis
             udPSCalWait_ValueChanged(this, e);
             udPSPhnum_ValueChanged(this, e);
             udPSMoxDelay_ValueChanged(this, e);
-            chkPSRelaxPtol_CheckedChanged(this, e);
             chkPSAutoAttenuate_CheckedChanged(this, e);
-            chkPSPin_CheckedChanged(this, e);
-            chkPSMap_CheckedChanged(this, e);
             chkPSStbl_CheckedChanged(this, e);
+            udPSEMAAlpha_ValueChanged(this, e);
+            udPSPinAlpha_ValueChanged(this, e);
+            chkPSPin_CheckedChanged(this, e);
+            chkPSEQ_CheckedChanged(this, e);
             comboPSTint_SelectedIndexChanged(this, e);
+            udPSTargetFeedback.Value = console.SetupForm.PSTargetFeedbackLevel;
+            udPSTargetFeedback_ValueChanged(this, e);
+            udPSOutlierSigma.Value = (decimal)console.SetupForm.PSOutlierSigma;
+            chkPSOutlierEnable.Checked = console.SetupForm.PSOutlierEnable;
+            chkPSOutlierEnable_CheckedChanged(this, e);
+            udPSOutlierSigma_ValueChanged(this, e);
+            chkPSDCB_CheckedChanged(this, e);
+            udPSDCBCap_ValueChanged(this, e);
             chkPSOnTop_CheckedChanged(this, e);
             chkQuickAttenuate_CheckedChanged(this, e);
             chkShow2ToneMeasurements_CheckedChanged(this, e);
@@ -1016,9 +1124,6 @@ namespace Thetis
         [DllImport("wdsp.dll", EntryPoint = "SetPSTXDelay", CallingConvention = CallingConvention.Cdecl)]
         public static extern double SetPSTXDelay(int channel, double delay);
 
-        [DllImport("wdsp.dll", EntryPoint = "psccF", CallingConvention = CallingConvention.Cdecl)]
-        public static extern void psccF(int channel, int size, float* Itxbuff, float* Qtxbuff, float* Irxbuff, float* Qrxbuff, bool mox, bool solidmox);
-
         [DllImport("wdsp.dll", EntryPoint = "PSSaveCorr", CallingConvention = CallingConvention.Cdecl)]
         public static extern void PSSaveCorr(int channel, string filename);
 
@@ -1034,26 +1139,42 @@ namespace Thetis
         [DllImport("wdsp.dll", EntryPoint = "GetPSMaxTX", CallingConvention = CallingConvention.Cdecl)]
         public static extern void GetPSMaxTX(int channel, double* maxtx);
 
-        [DllImport("wdsp.dll", EntryPoint = "SetPSPtol", CallingConvention = CallingConvention.Cdecl)]
-        public static extern void SetPSPtol(int channel, double ptol);
-
         [DllImport("wdsp.dll", EntryPoint = "GetPSDisp", CallingConvention = CallingConvention.Cdecl)]
-        public static extern void GetPSDisp(int channel, IntPtr x, IntPtr ym, IntPtr yc, IntPtr ys, IntPtr cm, IntPtr cc, IntPtr cs);
+        public static extern void GetPSDisp(int channel, IntPtr x, IntPtr ym, IntPtr yc, IntPtr ys, IntPtr xm_cor, IntPtr ym_cor, IntPtr xa_cor, IntPtr ya_cor, IntPtr nsamps_out, IntPtr cpts_out, IntPtr phs_ref_deg_out);
 
         [DllImport("wdsp.dll", EntryPoint = "SetPSFeedbackRate", CallingConvention = CallingConvention.Cdecl)]
         public static extern void SetPSFeedbackRate(int channel, int rate);
 
-        [DllImport("wdsp.dll", EntryPoint = "SetPSPinMode", CallingConvention = CallingConvention.Cdecl)]
-        public static extern void SetPSPinMode(int channel, int pin);
-
-        [DllImport("wdsp.dll", EntryPoint = "SetPSMapMode", CallingConvention = CallingConvention.Cdecl)]
-        public static extern void SetPSMapMode(int channel, int map);
-
+        // Yurij_eu2av: PureSignal 3.0 (WDSP 2.00) advanced property functions
         [DllImport("wdsp.dll", EntryPoint = "SetPSStabilize", CallingConvention = CallingConvention.Cdecl)]
         public static extern void SetPSStabilize(int channel, int stbl);
 
+        [DllImport("wdsp.dll", EntryPoint = "SetPSEMAAlpha", CallingConvention = CallingConvention.Cdecl)]
+        public static extern void SetPSEMAAlpha(int channel, double alpha);
+
+        [DllImport("wdsp.dll", EntryPoint = "SetPSPinAlpha", CallingConvention = CallingConvention.Cdecl)]
+        public static extern void SetPSPinAlpha(int channel, double alpha);
+
+        [DllImport("wdsp.dll", EntryPoint = "SetPSPinMode", CallingConvention = CallingConvention.Cdecl)]
+        public static extern void SetPSPinMode(int channel, int pin);
+
         [DllImport("wdsp.dll", EntryPoint = "SetPSIntsAndSpi", CallingConvention = CallingConvention.Cdecl)]
         public static extern void SetPSIntsAndSpi(int channel, int ints, int spi);
+
+        [DllImport("wdsp.dll", EntryPoint = "SetPSDCBEnable", CallingConvention = CallingConvention.Cdecl)]
+        public static extern void SetPSDCBEnable(int channel, int enable);
+
+        [DllImport("wdsp.dll", EntryPoint = "SetPSDCBCap", CallingConvention = CallingConvention.Cdecl)]
+        public static extern void SetPSDCBCap(int channel, double cap);
+
+        [DllImport("wdsp.dll", EntryPoint = "SetPSEQEnable", CallingConvention = CallingConvention.Cdecl)]
+        public static extern void SetPSEQEnable(int channel, int enable);
+
+        [DllImport("wdsp.dll", EntryPoint = "SetPSOutlierSigma", CallingConvention = CallingConvention.Cdecl)]
+        public static extern void SetPSOutlierSigma(int channel, double sigma);
+
+        [DllImport("wdsp.dll", EntryPoint = "ResetPSAdvancedParams", CallingConvention = CallingConvention.Cdecl)]
+        public static extern void ResetPSAdvancedParams(int channel);
 
         #endregion
 
@@ -1061,6 +1182,19 @@ namespace Thetis
         private static int[] _info = new int[16];
         private static int[] _oldInfo = new int[16];
         private static bool _bInvertRedBlue = false;
+        private static int _targetFeedbackLevel = 152;
+        public static int TargetFeedbackLevel
+        {
+            get { return _targetFeedbackLevel; }
+            set
+            {
+                if (value < 1) value = 1;
+                if (value > 256) value = 256;
+                _targetFeedbackLevel = value;
+            }
+        }
+        public static int FeedbackLevelGreenLow { get { return (int)(_targetFeedbackLevel * 0.7); } }
+        public static int FeedbackLevelGreenHigh { get { return (int)(_targetFeedbackLevel * 1.3); } }
         static puresignal()
         {
             for(int i = 0; i < 16; i++)
@@ -1107,28 +1241,37 @@ namespace Thetis
             get { return FeedbackLevel > 90; }
         }
         public static bool NeedToRecalibrate(int nCurrentATTonTX) {
-            //note: for reference (puresignal.Info[4] > 181 || (puresignal.Info[4] <= 128 && console.SetupForm.ATTOnTX > 0))
-            return (FeedbackLevel > 181 || (FeedbackLevel <= 128 && nCurrentATTonTX > 0));            
+            // Yurij_eu2av: recalibrate if feedback is too high relative to target,
+            // or too low while we still have attenuation headroom.
+            return (FeedbackLevel > (int)(_targetFeedbackLevel * 1.5) ||
+                    (FeedbackLevel < (int)(_targetFeedbackLevel * 0.7) && nCurrentATTonTX > 0));
         }
         public static bool IsFeedbackLevelOK {
             get { return FeedbackLevel <= 256; }
         }
         public static bool IsFeedbackLevelOKRange
         {
-            get { return FeedbackLevel > 128 && FeedbackLevel <= 181; }
+            get { return FeedbackLevel >= FeedbackLevelGreenLow && FeedbackLevel <= FeedbackLevelGreenHigh; }
         }
         public static int FeedbackLevel {
             get { return _info[4]; }
         }
         public static Color FeedbackColourLevel {
             get {
-                if (FeedbackLevel > 181)
+                int greenLow = FeedbackLevelGreenLow;
+                int greenHigh = FeedbackLevelGreenHigh;
+                int yellowLow = (int)(_targetFeedbackLevel * 0.5);
+                int yellowHigh = (int)(_targetFeedbackLevel * 1.5);
+
+                if (FeedbackLevel >= greenLow && FeedbackLevel <= greenHigh)
+                    return Color.Lime;
+                else if (FeedbackLevel >= yellowLow && FeedbackLevel <= yellowHigh)
+                    return Color.Yellow;
+                else if (FeedbackLevel > yellowHigh)
                 {
                     if (_bInvertRedBlue) return Color.Red;
                     return Color.DodgerBlue;
                 }
-                else if (FeedbackLevel > 128) return Color.Lime;
-                else if (FeedbackLevel > 90) return Color.Yellow;
                 else
                 {
                     if (_bInvertRedBlue) return Color.DodgerBlue;

@@ -24,6 +24,8 @@ The author can be reached by email at
 warren@wpratt.com
 
 */
+
+// Yurij_eu2av: Thetis patch ported to WDSP 2.00
 #ifndef _analyzer_h
 #define _analyzer_h
 #include "comm.h"
@@ -71,9 +73,9 @@ typedef struct _dp
 	double *result[dMAX_STITCH];							// pointers to buffer to hold elimination results for each sub-span
 	dOUTREAL *pixels[dMAX_PIXOUTS][dNUM_PIXEL_BUFFS];		// pointers pixel output buffers
 
-															   // [2.10.3.13]MW0LGE
-	double pixel_ref;										   // A reference value as a double for newly generated pixel buffers, which can be used to index the results of GetPixels back to this value
-															   // Could be used to track a centre frequency that the GetPixels relate to for example
+														   // [2.10.3.13]MW0LGE
+	double pixel_ref;									   // A reference value as a double for newly generated pixel buffers, which can be used to index the results of GetPixels back to this value
+														   // Could be used to track a centre frequency that the GetPixels relate to for example
 	double pixel_refs[dMAX_PIXOUTS][dNUM_PIXEL_BUFFS];		   // storage for the referencing used by get pixels
 
 	double *t_pixels[dMAX_PIXOUTS];							// pointer to temporary pixel buffer									//pointer to temporary pixel buffer for non-averaged data
@@ -211,13 +213,13 @@ void SnapSpectrum(	int disp,
 					int LO,
 					double *snap_buff);
 
-extern __declspec(dllexport)
-void SnapSpectrumTimeout(int disp,
-	int ss,
-	int LO,
-	double* snap_buff,
-	DWORD timeout,
-	int* flag);
+extern __declspec( dllexport )
+void SnapSpectrumTimeout (int disp,
+	                      int ss,
+	                      int LO,
+	                      double* snap_buff,
+	                      DWORD timeout,
+	                      int* flag);
 
 extern __declspec(dllexport)
 void SetPixelRef(int disp, double pixel_ref);

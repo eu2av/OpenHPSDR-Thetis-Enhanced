@@ -51,6 +51,7 @@ namespace Thetis
     class TitleBar
     {
         public const string BUILD_NAME = "MW0LGE";
+        public const string EXTENDED_NAME = "extended version-eu2av";
         public static string GetString(bool bWithFirmware = true)
         {
             string sRevision = "." + Common.GetRevision();
@@ -65,6 +66,7 @@ namespace Thetis
             s += " (" + VersionInfo.BuildDate + ")<FW>";  //[2.10.2.2]MW0LGE use the auto generated class from pre build event for the BuildDate
 
             if (BUILD_NAME != "") s += " " + BUILD_NAME;
+            if (EXTENDED_NAME != "") s += " / " + EXTENDED_NAME;
 
             if (!bWithFirmware) s = s.Replace("<FW>", "");
 

@@ -507,7 +507,7 @@
             this.timer_peak_text = new System.Windows.Forms.Timer(this.components);
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
             this.lblPAProfile = new System.Windows.Forms.LabelTS();
-            this.btnAPF_type = new System.Windows.Forms.ButtonTS();
+            this.btnAPF_type = new System.Windows.Forms.CheckBoxTS();
             this.ptbCWAPFGain = new Thetis.PrettyTrackBar();
             this.ptbCWAPFBandwidth = new Thetis.PrettyTrackBar();
             this.ptbCWAPFFreq = new Thetis.PrettyTrackBar();
@@ -1260,14 +1260,18 @@
             this.lblPAProfile.MouseDown += new System.Windows.Forms.MouseEventHandler(this.lblPAProfile_MouseDown);
             // 
             // btnAPF_type
-            // 
-            this.btnAPF_type.FlatAppearance.BorderSize = 0;
-            resources.ApplyResources(this.btnAPF_type, "btnAPF_type");
-            this.btnAPF_type.ForeColor = System.Drawing.SystemColors.ControlLightLight;
+            // Yurij-eu2av - 2026-07-09: changed from ButtonTS to CheckBoxTS/Appearance=Button
+            // so the skin engine styles the APF button like SEMI/QSK.
+            this.btnAPF_type.Appearance = System.Windows.Forms.Appearance.Button;
+            this.btnAPF_type.AutoCheck = false;
             this.btnAPF_type.Name = "btnAPF_type";
-            this.btnAPF_type.Selectable = true;
+            resources.ApplyResources(this.btnAPF_type, "btnAPF_type");
+            this.btnAPF_type.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnAPF_type.FlatAppearance.BorderSize = 0;
+            this.btnAPF_type.ForeColor = System.Drawing.Color.White;
+            this.btnAPF_type.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnAPF_type.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             this.toolTip1.SetToolTip(this.btnAPF_type, resources.GetString("btnAPF_type.ToolTip"));
-            this.btnAPF_type.UseVisualStyleBackColor = true;
             this.btnAPF_type.Click += new System.EventHandler(this.btnAPF_type_Click);
             this.btnAPF_type.MouseDown += new System.Windows.Forms.MouseEventHandler(this.btnAPF_type_MouseDown);
             // 
@@ -1287,7 +1291,7 @@
             this.ptbCWAPFGain.SmallChange = 1;
             this.ptbCWAPFGain.TabStop = false;
             this.toolTip1.SetToolTip(this.ptbCWAPFGain, resources.GetString("ptbCWAPFGain.ToolTip"));
-            this.ptbCWAPFGain.Value = 0;
+            this.ptbCWAPFGain.Value = 60;
             this.ptbCWAPFGain.Scroll += new Thetis.PrettyTrackBar.ScrollHandler(this.ptbCWAPFGain_Scroll);
             // 
             // ptbCWAPFBandwidth
@@ -1306,7 +1310,7 @@
             this.ptbCWAPFBandwidth.SmallChange = 1;
             this.ptbCWAPFBandwidth.TabStop = false;
             this.toolTip1.SetToolTip(this.ptbCWAPFBandwidth, resources.GetString("ptbCWAPFBandwidth.ToolTip"));
-            this.ptbCWAPFBandwidth.Value = 150;
+            this.ptbCWAPFBandwidth.Value = 100;
             this.ptbCWAPFBandwidth.Scroll += new Thetis.PrettyTrackBar.ScrollHandler(this.ptbCWAPFBandwidth_Scroll);
             // 
             // ptbCWAPFFreq
@@ -7920,7 +7924,7 @@
         private ToolStripMenuItem NR4ToolStripMenuItem;
         private ToolStripMenuItem NR3ToolStripMenuItem_rx2;
         private ToolStripMenuItem NR4ToolStripMenuItem_rx2;
-        private ButtonTS btnAPF_type;
+        private CheckBoxTS btnAPF_type;
         private ToolStripStatusLabel toolStripStatusLabel_PAstatus;
         private ToolStripStatusLabel toolStripStatus_PAspacer;
         private ToolStripStatusLabel toolStripStatusLabel_play_record;

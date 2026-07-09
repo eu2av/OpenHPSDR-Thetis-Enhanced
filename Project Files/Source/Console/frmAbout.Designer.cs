@@ -71,6 +71,7 @@
             "K5SO, Joe (Diversity Reception & firmware)",
             "WA8YWQ, Dave (various)",
             "KE9NS, Darrin (various)",
+            "EU2AV, Yurij (PureSignal enhancements, feedback calibration, Anvelina PRO3 firmware update & firmware)",
             "",
             "WU2O, Scott (forum admin & ideas/feedback)",
             "NC3Z, Gary (forum mod)",

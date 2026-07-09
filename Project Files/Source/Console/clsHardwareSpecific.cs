@@ -318,6 +318,60 @@ namespace Thetis
                 }
             }
         }
+
+        // Yurij_eu2av: hardware-specific target Feedback Level for PureSignal auto-attenuator.
+        // Default 152 preserves legacy behaviour; Anvelina PRO3 needs ~22 for its typical feedback coupling.
+        public static int PSTargetFeedbackLevel
+        {
+            get
+            {
+                // Yurij_eu2av: Orion MK2 based rigs (ANAN-7000/8000/Anvelina PRO3)
+                // share the same feedback coupling levels.  Target ~22 keeps the
+                // ADC2208 and codec well inside their linear range while giving
+                // enough feedback for PureSignal correction.
+                switch (_model)
+                {
+                    case HPSDRModel.ANAN7000D:
+                    case HPSDRModel.ANAN8000D:
+                    case HPSDRModel.ANVELINAPRO3:
+                        return 22;
+                    default:
+                        return 152;
+                }
+            }
+        }
+
+        public static bool PSOutlierEnableDefault
+        {
+            get
+            {
+                switch (_model)
+                {
+                    case HPSDRModel.ANAN7000D:
+                    case HPSDRModel.ANAN8000D:
+                    case HPSDRModel.ANVELINAPRO3:
+                        return true;
+                    default:
+                        return false;
+                }
+            }
+        }
+
+        public static double PSOutlierSigmaDefault
+        {
+            get
+            {
+                switch (_model)
+                {
+                    case HPSDRModel.ANAN7000D:
+                    case HPSDRModel.ANAN8000D:
+                    case HPSDRModel.ANVELINAPRO3:
+                        return 5.0;
+                    default:
+                        return 2.5;
+                }
+            }
+        }
         #endregion
 
         #region STRING_CONVERSION

@@ -24,6 +24,8 @@ warren@wpratt.com
 
 */
 
+// Yurij_eu2av: Thetis patch ported to WDSP 2.00
+
 #include "comm.h"
 
 void calc_cbl (CBL a)

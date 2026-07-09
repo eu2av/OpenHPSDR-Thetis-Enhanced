@@ -110,11 +110,11 @@ FMD create_fmd( int run, int size, double* in, double* out, int rate, double dev
 	// de-emphasis filter
 	a->audio = (double *) malloc0 (a->size * sizeof (complex));
 	impulse = fc_impulse (a->nc_de, a->f_low, a->f_high, +20.0 * log10(a->f_high / a->f_low), 0.0, 1, a->rate, 1.0 / (2.0 * a->size), 0, 0);
-	a->pde = create_fircore (a->size, a->audio, a->out, a->nc_de, a->mp_de, impulse);
+	a->pde = create_fircore (a->size, a->audio, a->out, a->nc_de, a->mp_de, 4, impulse);
 	_aligned_free (impulse);
 	// audio filter
 	impulse = fir_bandpass(a->nc_aud, 0.8 * a->f_low, 1.1 * a->f_high, a->rate, 0, 1, a->afgain / (2.0 * a->size));
-	a->paud = create_fircore (a->size, a->out, a->out, a->nc_aud, a->mp_aud, impulse);
+	a->paud = create_fircore (a->size, a->out, a->out, a->nc_aud, a->mp_aud, 4, impulse);
 	_aligned_free (impulse);
 	return a;
 }
@@ -226,12 +226,12 @@ void setSize_fmd (FMD a, int size)
 	// de-emphasis filter
 	destroy_fircore (a->pde);
 	impulse = fc_impulse (a->nc_de, a->f_low, a->f_high, +20.0 * log10(a->f_high / a->f_low), 0.0, 1, a->rate, 1.0 / (2.0 * a->size), 0, 0);
-	a->pde = create_fircore (a->size, a->audio, a->out, a->nc_de, a->mp_de, impulse);
+	a->pde = create_fircore (a->size, a->audio, a->out, a->nc_de, a->mp_de, 4, impulse);
 	_aligned_free (impulse);
 	// audio filter
 	destroy_fircore (a->paud);
 	impulse = fir_bandpass(a->nc_aud, 0.8 * a->f_low, 1.1 * a->f_high, a->rate, 0, 1, a->afgain / (2.0 * a->size));
-	a->paud = create_fircore (a->size, a->out, a->out, a->nc_aud, a->mp_aud, impulse);
+	a->paud = create_fircore (a->size, a->out, a->out, a->nc_aud, a->mp_aud, 4, impulse);
 	_aligned_free (impulse);
 	setSize_wcpagc (a->plim, a->size);
 }

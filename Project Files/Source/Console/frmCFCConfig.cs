@@ -48,6 +48,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
+// Yurij_eu2av: Q-factor EQ/CFCOMP call site updates
 namespace Thetis
 {
     public partial class frmCFCConfig : Form
@@ -374,18 +375,21 @@ namespace Thetis
 
             bool use_q = ucCFC_comp.ParametricEQ && ucCFC_eq.ParametricEQ;
 
-            //profile
+            //profile (Q-factor CFCOMP ported, Yurij_eu2av)
             unsafe
             {
-                fixed (double* Fptr = &cf[0], Gptr = &cg[0], Eptr = &eg[0], GQptr = &cq[0], EQptr = &eq[0])
+                fixed (double* Fptr = &cf[0], Gptr = &cg[0], Eptr = &eg[0])
                 {
                     if (use_q)
                     {
-                        WDSP.SetTXACFCOMPprofile(WDSP.id(1, 0), nfreqs, Fptr, Gptr, Eptr, GQptr, EQptr);
+                        fixed (double* Qgptr = &cq[0], Qeptr = &eq[0])
+                        {
+                            WDSP.SetTXACFCOMPprofile(WDSP.id(1, 0), nfreqs, Fptr, Gptr, Eptr, Qgptr, Qeptr);
+                        }
                     }
                     else
                     {
-                        WDSP.SetTXACFCOMPprofile(WDSP.id(1, 0), nfreqs, Fptr, Gptr, Eptr, null, null);
+                        WDSP.SetTXACFCOMPprofile(WDSP.id(1, 0), nfreqs, Fptr, Gptr, Eptr, (double*)0, (double*)0);
                     }
                 }
             }

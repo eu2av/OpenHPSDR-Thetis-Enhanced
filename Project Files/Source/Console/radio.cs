@@ -102,14 +102,33 @@ namespace Thetis
 
 		public static void CreateDSP()
 		{
-            //check for old wdspWisdom00 file - [2.10.3.9]MW0LGE
-            string filePath = Path.Combine(Path.GetDirectoryName(app_data_path), "wdspWisdom00");
+            // WDSP creates/uses wdspWisdom01 - [2.10.3.9]MW0LGE
+            const string wisdomFileName = "wdspWisdom01";
+            const string oldWisdomFileName = "wdspWisdom00";
+            string filePath = Path.Combine(Path.GetDirectoryName(app_data_path), wisdomFileName);
+            string oldFilePath = Path.Combine(Path.GetDirectoryName(app_data_path), oldWisdomFileName);
+
+            // Clean up the old wdspWisdom00 file if it is still around.
+            // If the current wdspWisdom01 does not yet exist, try to reuse the old file
+            // so the user does not have to wait for a rebuild.
+            if (File.Exists(oldFilePath))
+            {
+                try
+                {
+                    if (!File.Exists(filePath))
+                        File.Move(oldFilePath, filePath);
+                    else
+                        File.Delete(oldFilePath);
+                }
+                catch { }
+            }
+
             if (File.Exists(filePath))
             {
                 if (File.GetLastWriteTime(filePath) < DateTime.Now.AddMonths(-3))
                 {
                     // at least 3 months old
-                    DialogResult result = MessageBox.Show("The fft wisdom file is older than 3 months.\n\nIt can yeild performance improvements if rebuilt, especially if the Thetis version/install has changed.\n\nThis process can take upwards of 5 minutes or more depending upon your system.\n\nYou will be notified when complete. Do you want to rebuild it?\n\nnote: you will not be asked again for another 3 months", "Wisdom File", MessageBoxButtons.YesNo, MessageBoxIcon.Question, MessageBoxDefaultButton.Button2, Common.MB_TOPMOST);
+                    DialogResult result = MessageBox.Show("The fft wisdom file is older than 3 months.\n\nIt can yield performance improvements if rebuilt, especially if the Thetis version/install has changed.\n\nThis process can take upwards of 5 minutes or more depending upon your system.\n\nYou will be notified when complete. Do you want to rebuild it?\n\nnote: you will not be asked again for another 3 months", "Wisdom File", MessageBoxButtons.YesNo, MessageBoxIcon.Question, MessageBoxDefaultButton.Button2, Common.MB_TOPMOST);
                     if (result == DialogResult.No)
                     {
                         // touch it
@@ -136,7 +155,7 @@ namespace Thetis
             
             if (rebuilt)
             {
-                // wisdom00 rebuilt, so remove any existing impulse cache as it is now invalid
+                // wisdom01 rebuilt, so remove any existing impulse cache as it is now invalid
                 // best that we start afresh, because depending on config this may be left behind
                 try
                 {
@@ -153,7 +172,7 @@ namespace Thetis
 
             if (_cache_impulse_save_restore && !rebuilt)
             {
-                // read any impulse cache if we have previously saved it. Ignored if wisdom00 is rebuilt
+                // read any impulse cache if we have previously saved it. Ignored if wisdom01 is rebuilt
                 WDSP.read_impulse_cache(Path.Combine(app_data_path, "impulse_cache.dat"));
             }
 
@@ -1947,8 +1966,8 @@ namespace Thetis
             }
         }
 
-        private double rx_apf_bw_dsp = 600.0;
-        private double rx_apf_bw = 600.0;
+        private double rx_apf_bw_dsp = 100.0;
+        private double rx_apf_bw = 100.0;
         public double RXAPFBw
         {
             get { return rx_apf_bw; }
@@ -1966,8 +1985,8 @@ namespace Thetis
             }
         }
 
-        private double rx_apf_gain_dsp = 1.0;
-        private double rx_apf_gain = 1.0;
+        private double rx_apf_gain_dsp = 2.0;
+        private double rx_apf_gain = 2.0;
         public double RXAPFGain
         {
             get { return rx_apf_gain; }

@@ -1357,4 +1357,11 @@ copy /Y "..\..\..\Source\packages\SkiaSharp.NativeAssets.Win32.3.119.2\runtimes\
   <Import Project="..\packages\SkiaSharp.NativeAssets.macOS.3.119.2\build\net462\SkiaSharp.NativeAssets.macOS.targets" Condition="Exists('..\packages\SkiaSharp.NativeAssets.macOS.3.119.2\build\net462\SkiaSharp.NativeAssets.macOS.targets')" />
   <Import Project="..\packages\SkiaSharp.NativeAssets.Win32.3.119.2\build\net462\SkiaSharp.NativeAssets.Win32.targets" Condition="Exists('..\packages\SkiaSharp.NativeAssets.Win32.3.119.2\build\net462\SkiaSharp.NativeAssets.Win32.targets')" />
   <Import Project="..\packages\System.ValueTuple.4.6.2\build\net471\System.ValueTuple.targets" Condition="Exists('..\packages\System.ValueTuple.4.6.2\build\net471\System.ValueTuple.targets')" />
+  <Target Name="CopyAPFSkins" AfterTargets="Build">
+    <ItemGroup>
+      <APFSkinImages Include="$(MSBuildProjectDirectory)\..\..\..\SkinsAPF\*.png" />
+    </ItemGroup>
+    <MakeDir Directories="$(ProjectDir)$(OutDir)SkinsAPF" Condition="'@(APFSkinImages)' != ''" />
+    <Copy SourceFiles="@(APFSkinImages)" DestinationFolder="$(ProjectDir)$(OutDir)SkinsAPF" SkipUnchangedFiles="true" Condition="'@(APFSkinImages)' != ''" />
+  </Target>
 </Project>

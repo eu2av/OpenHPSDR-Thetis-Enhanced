@@ -76,6 +76,13 @@ namespace Thetis
         double[] cm = new double[4 * max_ints];
         double[] cc = new double[4 * max_ints];
         double[] cs = new double[4 * max_ints];
+        double[] xm_cor = new double[max_samps];
+        double[] ym_cor = new double[max_samps];
+        double[] xa_cor = new double[max_samps];
+        double[] ya_cor = new double[max_samps];
+        int[] nsamps_out = new int[1];
+        int[] cpts_out = new int[1];
+        double[] phs_ref_deg_out = new double[1];
         double[] t  = new double[max_ints + 1];
         int skip = 1;
         bool showgain = false;
@@ -94,9 +101,12 @@ namespace Thetis
             //hcm = GCHandle.Alloc(cm, GCHandleType.Pinned);
             //hcc = GCHandle.Alloc(cc, GCHandleType.Pinned);
             //hcs = GCHandle.Alloc(cs, GCHandleType.Pinned);
-            double delta = 1.0 / (double)_psform.Ints;
+            // WDSP 2.00 PureSignal 3.0 bucket configuration from PSForm.
+            int ints = _psform.Ints;
+            if (ints < 1) ints = 16;
+            double delta = 1.0 / (double)ints;
             t[0] = 0.0;
-            for (int i = 1; i <= _psform.Ints; i++)
+            for (int i = 1; i <= ints; i++)
                 t[i] = t[i - 1] + delta;
             EventArgs ex = EventArgs.Empty;
             chkAVShowGain_CheckedChanged(this, ex);
@@ -374,9 +384,16 @@ namespace Thetis
                 fixed (double* pym = ym)
                 fixed (double* pyc = yc)
                 fixed (double* pys = ys)
+                fixed (double* pxm_cor = xm_cor)
+                fixed (double* pym_cor = ym_cor)
+                fixed (double* pxa_cor = xa_cor)
+                fixed (double* pya_cor = ya_cor)
                 fixed (double* pcm = cm)
                 fixed (double* pcc = cc)
                 fixed (double* pcs = cs)
+                fixed (int* pnsamps_out = nsamps_out)
+                fixed (int* pcpts_out = cpts_out)
+                fixed (double* pphs_ref_deg_out = phs_ref_deg_out)
                 {
                     puresignal.GetPSDisp(
                         WDSP.id(1, 0),
@@ -386,7 +403,11 @@ namespace Thetis
                         new IntPtr(pys),
                         new IntPtr(pcm),
                         new IntPtr(pcc),
-                        new IntPtr(pcs)
+                        new IntPtr(pcs),
+                        new IntPtr(pya_cor),
+                        new IntPtr(pnsamps_out),
+                        new IntPtr(pcpts_out),
+                        new IntPtr(pphs_ref_deg_out)
                     );
                 }
             }
@@ -404,8 +425,11 @@ namespace Thetis
                 chart1.Series["MagAmp"].Points.SuspendUpdates();
                 chart1.Series["PhsAmp"].Points.SuspendUpdates();
 
+                // WDSP 2.00 PureSignal 3.0 bucket configuration from PSForm.
                 int ints = _psform.Ints;
                 int spi = _psform.Spi;
+                if (ints < 1) ints = 16;
+                if (spi < 1) spi = 256;
                 int instSpiTot = ints * spi;
                 if (_oldIntsSpi != instSpiTot)
                 {

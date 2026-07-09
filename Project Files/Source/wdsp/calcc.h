@@ -48,6 +48,7 @@ typedef struct _calcc
 	double hw_scale;
 	double rx_scale;
 	double alpha;
+	double outlier_sigma;	// 0.0 = disabled
 
 	int tsamps;
 	double* env_TX;

@@ -4111,6 +4111,7 @@
             this.timer_VAC_Monitor = new System.Windows.Forms.Timer(this.components);
             this.timer_LED_Mirror = new System.Windows.Forms.Timer(this.components);
             this.timer_RawInputMouseWheel = new System.Windows.Forms.Timer(this.components);
+            this.timerPhRot = new System.Windows.Forms.Timer(this.components);
             this.tmrCFCOMPGain = new System.Windows.Forms.Timer(this.components);
             this.tmrCheckProfile = new System.Windows.Forms.Timer(this.components);
             this.tcMMsettings = new System.Windows.Forms.TabControl();
@@ -40895,7 +40896,8 @@
             this.tbDSPAudRX2APFGain.Size = new System.Drawing.Size(100, 16);
             this.tbDSPAudRX2APFGain.TabIndex = 60;
             this.tbDSPAudRX2APFGain.TickFrequency = 10;
-            this.toolTip1.SetToolTip(this.tbDSPAudRX2APFGain, "Gain of Audio Peaking Filter");
+            this.toolTip1.SetToolTip(this.tbDSPAudRX2APFGain, "Gain of Audio Peaking Filter (dB)");
+            this.tbDSPAudRX2APFGain.Value = 60;
             this.tbDSPAudRX2APFGain.ValueChanged += new System.EventHandler(this.tbDSPAudRX2APFGain_ValueChanged);
             this.tbDSPAudRX2APFGain.LostFocus += new System.EventHandler(this.tbDSPAudRX2APFGain_LostFocus);
             // 
@@ -40912,7 +40914,7 @@
             this.tbRX2APFBW.TabIndex = 52;
             this.tbRX2APFBW.TickFrequency = 20;
             this.toolTip1.SetToolTip(this.tbRX2APFBW, "Approximate -3dB bandwidth of Audio Peaking Filter");
-            this.tbRX2APFBW.Value = 150;
+            this.tbRX2APFBW.Value = 100;
             this.tbRX2APFBW.Scroll += new System.EventHandler(this.tbRX2APFBW_Scroll);
             // 
             // tbRX2APFTune
@@ -41087,7 +41089,8 @@
             this.tbDSPAudRX1subAPFGain.Size = new System.Drawing.Size(100, 16);
             this.tbDSPAudRX1subAPFGain.TabIndex = 61;
             this.tbDSPAudRX1subAPFGain.TickFrequency = 10;
-            this.toolTip1.SetToolTip(this.tbDSPAudRX1subAPFGain, "Gain of Audio Peaking Filter");
+            this.toolTip1.SetToolTip(this.tbDSPAudRX1subAPFGain, "Gain of Audio Peaking Filter (dB)");
+            this.tbDSPAudRX1subAPFGain.Value = 60;
             this.tbDSPAudRX1subAPFGain.ValueChanged += new System.EventHandler(this.tbDSPAudRX1subAPFGain_ValueChanged);
             this.tbDSPAudRX1subAPFGain.LostFocus += new System.EventHandler(this.tbDSPAudRX1subAPFGain_LostFocus);
             // 
@@ -41104,7 +41107,7 @@
             this.tbRX1subAPFBW.TabIndex = 52;
             this.tbRX1subAPFBW.TickFrequency = 20;
             this.toolTip1.SetToolTip(this.tbRX1subAPFBW, "Approximate -3dB bandwidth of Audio Peaking Filter");
-            this.tbRX1subAPFBW.Value = 150;
+            this.tbRX1subAPFBW.Value = 100;
             this.tbRX1subAPFBW.Scroll += new System.EventHandler(this.tbRX1subAPFBW_Scroll);
             // 
             // tbRX1subAPFTune
@@ -41279,7 +41282,8 @@
             this.tbDSPAudRX1APFGain.Size = new System.Drawing.Size(100, 16);
             this.tbDSPAudRX1APFGain.TabIndex = 61;
             this.tbDSPAudRX1APFGain.TickFrequency = 10;
-            this.toolTip1.SetToolTip(this.tbDSPAudRX1APFGain, "Gain of Audio Peaking Filter");
+            this.toolTip1.SetToolTip(this.tbDSPAudRX1APFGain, "Gain of Audio Peaking Filter (dB)");
+            this.tbDSPAudRX1APFGain.Value = 60;
             this.tbDSPAudRX1APFGain.ValueChanged += new System.EventHandler(this.tbDSPAudRX1APFGain_ValueChanged);
             this.tbDSPAudRX1APFGain.LostFocus += new System.EventHandler(this.tbDSPAudRX1APFGain_LostFocus);
             // 
@@ -41296,7 +41300,7 @@
             this.tbRX1APFBW.TabIndex = 52;
             this.tbRX1APFBW.TickFrequency = 20;
             this.toolTip1.SetToolTip(this.tbRX1APFBW, "Approximate -3dB bandwidth of Audio Peaking Filter");
-            this.tbRX1APFBW.Value = 150;
+            this.tbRX1APFBW.Value = 100;
             this.tbRX1APFBW.Scroll += new System.EventHandler(this.tbRX1APFBW_Scroll);
             // 
             // tbRX1APFTune
@@ -46294,7 +46298,7 @@
             this.grpPhRot.Controls.Add(this.chkPHROTEnable);
             this.grpPhRot.Location = new System.Drawing.Point(513, 264);
             this.grpPhRot.Name = "grpPhRot";
-            this.grpPhRot.Size = new System.Drawing.Size(124, 121);
+            this.grpPhRot.Size = new System.Drawing.Size(210, 130);
             this.grpPhRot.TabIndex = 170;
             this.grpPhRot.TabStop = false;
             this.grpPhRot.Text = "Phase Rotator";
@@ -65928,6 +65932,12 @@
             this.timer_RawInputMouseWheel.Interval = 500;
             this.timer_RawInputMouseWheel.Tick += new System.EventHandler(this.Timer_RawInputMouseWheel_Tick);
             // 
+            // timerPhRot
+            // 
+            this.timerPhRot.Enabled = true;
+            this.timerPhRot.Interval = 250;
+            this.timerPhRot.Tick += new System.EventHandler(this.timerPhRot_Tick);
+            // 
             // tmrCFCOMPGain
             // 
             this.tmrCFCOMPGain.Enabled = true;
@@ -72607,6 +72617,43 @@
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDownTS36)).EndInit();
             this.panelTS4.ResumeLayout(false);
             this.panelTS4.PerformLayout();
+            // Yurij_eu2av: hidden persisted target Feedback Level for PureSignal auto-attenuator
+            this.udPSTargetFeedbackLevel = new System.Windows.Forms.NumericUpDownTS();
+            ((System.ComponentModel.ISupportInitialize)(this.udPSTargetFeedbackLevel)).BeginInit();
+            this.udPSTargetFeedbackLevel.Location = new System.Drawing.Point(-100, -100);
+            this.udPSTargetFeedbackLevel.Name = "udPSTargetFeedbackLevel";
+            this.udPSTargetFeedbackLevel.Size = new System.Drawing.Size(50, 20);
+            this.udPSTargetFeedbackLevel.TabIndex = 999;
+            this.udPSTargetFeedbackLevel.Minimum = new decimal(new int[] { 1, 0, 0, 0 });
+            this.udPSTargetFeedbackLevel.Maximum = new decimal(new int[] { 256, 0, 0, 0 });
+            this.udPSTargetFeedbackLevel.Value = new decimal(new int[] { 152, 0, 0, 0 });
+            this.udPSTargetFeedbackLevel.Visible = false;
+            ((System.ComponentModel.ISupportInitialize)(this.udPSTargetFeedbackLevel)).EndInit();
+            this.Controls.Add(this.udPSTargetFeedbackLevel);
+            // Yurij_eu2av: hidden persisted PureSignal outlier settings
+            this.udPSOutlierSigma = new System.Windows.Forms.NumericUpDownTS();
+            ((System.ComponentModel.ISupportInitialize)(this.udPSOutlierSigma)).BeginInit();
+            this.udPSOutlierSigma.Location = new System.Drawing.Point(-100, -100);
+            this.udPSOutlierSigma.Name = "udPSOutlierSigma";
+            this.udPSOutlierSigma.Size = new System.Drawing.Size(50, 20);
+            this.udPSOutlierSigma.TabIndex = 999;
+            this.udPSOutlierSigma.DecimalPlaces = 1;
+            this.udPSOutlierSigma.Increment = new decimal(new int[] { 1, 0, 0, 65536 });
+            this.udPSOutlierSigma.Minimum = new decimal(new int[] { 1, 0, 0, 65536 });
+            this.udPSOutlierSigma.Maximum = new decimal(new int[] { 50, 0, 0, 65536 });
+            this.udPSOutlierSigma.Value = new decimal(new int[] { 25, 0, 0, 65536 });
+            this.udPSOutlierSigma.Visible = false;
+            ((System.ComponentModel.ISupportInitialize)(this.udPSOutlierSigma)).EndInit();
+            this.Controls.Add(this.udPSOutlierSigma);
+            this.chkPSOutlierEnable = new System.Windows.Forms.CheckBoxTS();
+            this.chkPSOutlierEnable.AutoSize = true;
+            this.chkPSOutlierEnable.Location = new System.Drawing.Point(-100, -100);
+            this.chkPSOutlierEnable.Name = "chkPSOutlierEnable";
+            this.chkPSOutlierEnable.Size = new System.Drawing.Size(80, 17);
+            this.chkPSOutlierEnable.TabIndex = 999;
+            this.chkPSOutlierEnable.Text = "Outlier";
+            this.chkPSOutlierEnable.Visible = false;
+            this.Controls.Add(this.chkPSOutlierEnable);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -72676,6 +72723,9 @@
         private ComboBoxTS comboKBModeDown;
         private LabelTS lblDisplayFPS;
         private NumericUpDownTS udDisplayFPS;
+        private NumericUpDownTS udPSTargetFeedbackLevel;
+        private NumericUpDownTS udPSOutlierSigma;
+        private CheckBoxTS chkPSOutlierEnable;
         public TabPage tpAudio;
         private TabPage tpTransmit;
         private NumericUpDownTS udTXFilterHigh;
@@ -74793,6 +74843,7 @@
         private LabelTS lblVAC1underflows;
         private LabelTS lblVAC1overflows;
         private Timer timer_VAC_Monitor;
+        private Timer timerPhRot;
         private LabelTS lblVAC1var;
         private LabelTS lblVAC1varratio;
         private LabelTS lblVAC1_TOVAC;

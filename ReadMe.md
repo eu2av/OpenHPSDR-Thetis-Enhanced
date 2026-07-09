@@ -6,6 +6,18 @@
 
 ---
 
+## ⚠️ Important note for users upgrading from previous builds
+
+> **Russian / Русский:** При запуске этой версии **со старыми настройками / профилями** Thetis автоматически обнаружит несовместимую базу данных и предложит обновить её через диалог Yes/No. Перед обновлением будет создана резервная копия. Удерживать **Ctrl** при запуске больше не требуется — этот способ оставлен только как ручной force-upgrade на крайний случай.
+>
+> Из-за перехода на обработку **WDSP 2.0** настройки эквалайзера (EQ), скорее всего, придётся подстроить заново: высокие частоты теперь могут звучать громче, чем в предыдущих сборках.
+
+> **English:** When launching this build **with old settings / profiles**, Thetis now automatically detects an incompatible database and offers to update it through a Yes/No dialog. A backup is created automatically before the update. Holding **Ctrl** at launch is no longer required — it remains only as a manual force-upgrade fallback.
+>
+> Because of the switch to **WDSP 2.0** DSP processing, equalizer (EQ) settings will likely need to be readjusted: high frequencies may now be louder than in previous builds.
+
+---
+
 ## Overview
 
 This fork contains a set of focused quality-of-life and accuracy improvements for the **Thetis SDR** client software. All changes are **opt-in by default** (zero regressions) and do not alter existing behaviour unless the user explicitly enables them.

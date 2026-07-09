@@ -892,8 +892,9 @@ namespace Thetis
                 {
                     string msg = "The database is incorrectly configured for this version of Thetis.\n\n" +
                         "This is most likely because the database has not yet been updated.\n\n" +
-                        "Try holding either CTRL key BEFORE Thetis is re-launched,\n" +
-                        "and KEEP IT HELD until you see a message at which point you may release it.";
+                        "Thetis will normally offer to update the database automatically on startup.\n" +
+                        "If the automatic update was declined or failed, you can force it by holding either CTRL key while launching Thetis, " +
+                        "or by creating an empty file named 'updatedb.txt' in your data folder.";
 
                     MessageBox.Show(msg, "Database Error",
                         MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1, Common.MB_TOPMOST);
@@ -1197,10 +1198,6 @@ namespace Thetis
             //_full_auto_att_timer = new System.Threading.Timer(timerTick_RX1_FullAutoAtt, null, 0, 200);
             ////
         }
-        private clsSpectrumProcessor _spectrumProcessor;
-        private Form _rx1SpectrumTestForm;
-        private Form _rx2SpectrumTestForm;
-
         private void initialisePortAudio()
         {
             System.Int32 result = PA19.PA_Initialize();
@@ -1620,8 +1617,9 @@ namespace Thetis
                 {
                     string msg = "The database is incorrectly configured for this version of Thetis.\n\n" +
                         "This is most likely because the database has not yet been updated.\n\n" +
-                        "Try holding either CTRL key BEFORE Thetis is re-launched,\n" +
-                        "and KEEP IT HELD until you see a message at which point you may release it.";
+                        "Thetis will normally offer to update the database automatically on startup.\n" +
+                        "If the automatic update was declined or failed, you can force it by holding either CTRL key while launching Thetis, " +
+                        "or by creating an empty file named 'updatedb.txt' in your data folder.";
 
                     MessageBox.Show(msg, "Database Error",
                         MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1, Common.MB_TOPMOST);
@@ -18597,7 +18595,7 @@ namespace Thetis
                     apf_gain = value;
                     ptbCWAPFGain.Value = value;
                     double gain_value = Math.Round(ptbCWAPFGain.Value / 10.0, 0);
-                    lblCWAPFGain.Text = "Gain:  " + gain_value.ToString();
+                    lblCWAPFGain.Text = "Gain:  " + gain_value.ToString() + " dB";
                 }
             }
         }
@@ -30979,7 +30977,7 @@ namespace Thetis
             }
             double gain_value = Math.Round(ptbCWAPFGain.Value / 10.0, 0);
 
-            lblCWAPFGain.Text = "Gain:  " + gain_value.ToString();
+            lblCWAPFGain.Text = "Gain:  " + gain_value.ToString() + " dB";
 
             if (sender.GetType() == typeof(PrettyTrackBar))
             {

@@ -22,7 +22,6 @@ namespace Thetis
         private bool bool_ANAN_100D_PA_rev15 = false;
         private bool bool_ANAN_100D_PA_rev24 = false;
         private bool bool_rx = false;
-        private bool bool_ALEX_manual = false;
         private bool bool_ANT1 = false;
         private bool bool_ANT1_TX = false;
         private bool bool_ANT2 = false;

@@ -2,9 +2,212 @@
 
 **Project:** Thetis SDR (openHPSDR transceiver software)  
 **Base version:** Thetis 2.10.x (VS2026 solution)  
-**Date:** 2026-07-03  
+**Date:** 2026-07-09  
 **Author:** Yurij-eu2av  
 **Purpose:** Documenting local additions for submission to Thetis authors / upstream integration.
+
+---
+
+## 2026-07-09 — Correct default values for CW APF (Audio Peaking Filter)
+
+### Summary
+- Investigated telegraphists' reports that the new APF modes (BI/DP/MA/GA) sound
+  less pronounced than before.
+- The filter algorithms in WDSP 2.00 are unchanged from WDSP 1.29; the difference
+  was in Thetis defaults.
+- The WDSP Guide recommends a default gain of **2.0** (6 dB) and bandwidth of
+  **100 Hz**.
+- Thetis was setting gain = 1.0 (0 dB) and bandwidth = 150 Hz, so the filter peak
+  was barely audible.
+- Defaults have been aligned with WDSP recommendations:
+  - gain slider = 60 (6 dB);
+  - bandwidth = 100 Hz.
+- The gain label now shows units: "Gain: X dB".
+
+### Files changed
+- `Project Files/Source/Console/console.Designer.cs` — default `ptbCWAPFGain.Value = 60`,
+  `ptbCWAPFBandwidth.Value = 100`.
+- `Project Files/Source/Console/setup.designer.cs` — default 60/100 for APF gain/bandwidth
+  trackbars on all RX paths.
+- `Project Files/Source/Console/console.cs` — gain label now includes "dB".
+- `Project Files/Source/Console/radio.cs` — default fields `rx_apf_gain`/`rx_apf_bw`
+  updated to 2.0/100.
+
+---
+
+## 2026-07-09 — Fix for repeated “fft wisdom file is missing” warning
+
+### Summary
+- Fixed a bug where Thetis showed the “The fft wisdom file is missing...” message on every startup, even after wisdom had already been built successfully.
+- The C# code was checking for `wdspWisdom00`, while WDSP has long created and used `wdspWisdom01`.
+- The check now looks for `wdspWisdom01`. Any legacy `wdspWisdom00` left over from older versions is automatically renamed to `wdspWisdom01` (if `01` is missing) or deleted.
+- The first run still builds wisdom and shows the warning; all subsequent runs proceed without the extra dialog.
+
+### Files changed
+- `Project Files/Source/Console/radio.cs` — check for `wdspWisdom01`, handle legacy `wdspWisdom00`.
+
+---
+
+## 2026-07-09 — Automatic database upgrade on schema mismatch
+
+### Summary
+- Added automatic detection of outdated or corrupted databases after adding new
+  features/columns.
+- On startup Thetis now validates database compatibility: all `TXProfile` columns
+  must be present, no `DBNull` values in required fields, `VersionNumber`/`Version`
+  must exist in `State`, and a `Default` row must exist in `TXProfileDef`.
+- If the database is incompatible, a warning dialog asks for user consent to
+  update. A backup is created automatically before any changes.
+- The upgrade creates a new database and merges the old one using
+  `ImportAndMergeDatabase`, filling missing fields with default values.
+- Holding **Ctrl** at launch is no longer required — the consent dialog appears
+  automatically. Ctrl (and an empty `updatedb.txt` file in the data folder) remain
+  only as a manual force-upgrade fallback.
+
+### Files changed
+- `Project Files/Source/Console/clsDBMan.cs` — Yes/No consent dialog, pre-upgrade
+  backup, passes schema-mismatch flag to `checkVersion()`.
+- `Project Files/Source/Console/database.cs` — new `IsDatabaseCompatible()` method
+  that validates the `TXProfile`/`TXProfileDef`/`State` schema and data.
+- `Project Files/Source/Console/console.cs` — updated the fallback database error
+  message to mention the automatic update and list Ctrl only as a manual fallback.
+
+---
+
+## 2026-07-09 — APF (CW) button: proper rendering and independent `SkinsAPF` folder
+
+### Summary
+- The APF type button (`btnAPF_type`) was changed from `ButtonTS` to `CheckBoxTS`
+  with `Appearance = Button`, matching the `SEMI`/`chkQSK` button. It is now
+  correctly handled by the skin engine and looks like a real button.
+- The mode labels **DP / MA / GA / BI** are now readable: white bold centred text,
+  flat style, no border, dark background.
+- Layout adjusted: button size restored to 36×20 and the `Tune:` label moved left
+  by ~1 mm (from `44, 16` to `40, 16`) so the gap between the button and the label
+  is tidy.
+- Added an **independent skin folder `SkinsAPF`** next to the main `Skins` folder.
+  APF button images are loaded from there when the current skin does not provide
+  them, so existing skins do not need to be updated.
+- If the `SkinsAPF` folder is missing, Thetis **automatically creates it on first
+  run** and populates it with default PNG stubs for all button states. Users can
+  replace these PNGs with their own.
+
+### Files changed
+- `Project Files/Source/Console/console.Designer.cs` — `btnAPF_type` is now a
+  `CheckBoxTS` with `Appearance = Button`, `AutoCheck = false`, flat style, white text.
+- `Project Files/Source/Console/console.resx` — control type updated, obsolete
+  `ButtonTS` properties removed, `lblCWAPFTune` position corrected.
+- `Project Files/Source/Console/Skin.cs` — added fallback to the `SkinsAPF` folder
+  (next to `Skins` and next to `Thetis.exe`), automatic creation of default PNGs
+  when they are missing.
+- `Project Files/Source/Console/Thetis.csproj` — MSBuild target copies `SkinsAPF/*.png`
+  to the output directory during build.
+- New `SkinsAPF/` folder at the repository root — default PNG stubs for the APF button.
+
+---
+
+## 2026-07-08 — WDSP 2.00 Phase Rotator (Auto/Reset/Asymmetry) and PSA over-drive indicator
+
+### Summary
+- Completed the Phase Rotator implementation per the WDSP 2.00 Guide:
+  added the missing imports `SetTXAPHROTAutoMode`, `SetTXAPHROTAutoReset`,
+  and `GetTXAPHROTAsymmetry`.
+- Added to the **Phase Rotator** group on the DSP CFC tab:
+  - **Auto FC** checkbox to enable/disable automatic corner-frequency optimisation;
+  - **Reset** button to restart the optimiser from the default 338 Hz;
+  - live **IN / OUT asymmetry** and current **FC** read-outs;
+  - optimiser status label (**Off / Search / Done**).
+- Added a PureSignal visual warning: when `GetPSInfo info[6] == 2`
+  (severe over-drive per the WDSP 2.00 Guide), `lblPSInfo6` is highlighted in red.
+
+### Files changed
+- `Project Files/Source/Console/dsp.cs` — imports for `SetTXAPHROTAutoMode`,
+  `SetTXAPHROTAutoReset`, `GetTXAPHROTAsymmetry`.
+- `Project Files/Source/Console/setup.designer.cs` — Phase Rotator UI controls.
+- `Project Files/Source/Console/setup.cs` — Auto/Reset handlers, asymmetry/status
+  update timer (`timerPhRot_Tick`), persistence of `CFCPhaseRotatorAuto` in the TX profile.
+- `Project Files/Source/Console/database.cs` — added `CFCPhaseRotatorAuto` column to the
+  TX profile table, all default rows, and `VerifyTXProfileColumns()` migration for old DBs.
+- `Project Files/Source/Console/PSForm.cs` — red highlight of `lblPSInfo6` when `info[6] == 2`.
+
+### Fix (2026-07-08 later)
+- The new Phase Rotator controls (Auto FC, Reset, status/asymmetry labels) were moved
+  out of `setup.designer.cs` and are now created programmatically in `setup.cs` by
+  `InitPhaseRotatorControls()`, following the same pattern as the Det. Cal. tab.
+  This avoids the situation where the controls are visible in the designer but do not
+  appear in the built runtime assembly.
+
+---
+
+## 2026-07-07 — PureSignal advanced controls restored for WDSP 2.00
+
+### Summary
+- Restored the WDSP 1.x exported functions `SetPSPtol`, `SetPSPinMode`, `SetPSMapMode`, `SetPSStabilize`, `SetPSIntsAndSpi`.
+- Implemented them as backward-compatible wrappers that map the old parameters to the closest tunables of the WDSP 2.00 NURBS/spline calibration engine.
+- The `PSForm.cs` switches are functional again; existing UI and user settings remain compatible.
+
+### Mapping of legacy functions to the NURBS engine
+| Function | Legacy meaning | New WDSP 2.00 behavior |
+|---|---|---|
+| `SetPSPtol` | Overdrive sample culling tolerance | `outlier_sigma = 1.5 + ptol * 1.875` for MAG/COS/SIN NURBS fits |
+| `SetPSPinMode` | High-power endpoint pin mode | Toggles `pin_start` for COS/SIN; MAG end-pin kept enabled |
+| `SetPSMapMode` | Amplitude grid mapping mode | Toggles `eq_enable` (density equalization) |
+| `SetPSStabilize` | EMA smoothing of solutions | `stbl=1` -> `alpha=0.30`; `stbl=0` -> `alpha=1.0` (no smoothing) |
+| `SetPSIntsAndSpi` | Integration count / samples per integration | Stores values and resets the collector for re-collection (WDSP 2.00 uses a fixed bucket collector) |
+
+### Files changed
+- `Project Files/Source/wdsp/calcc.h`: added `ptol`, `pin_mode`, `map_mode`, `stbl`, `ints`, `spi` fields and `extern` declarations.
+- `Project Files/Source/wdsp/calcc.c`: field initialization, application of `ptol`/`pin_mode`/`map_mode` in `calc()`, implementation of the five `SetPS*` functions.
+- `Project Files/Source/Console/PSForm.cs`: added `DllImport`s and re-enabled handlers for `chkPSRelaxPtol`, `chkPSPin`, `chkPSMap`, `chkPSStbl`, `comboPSTint`.
+
+### Build status
+- `wdsp.vcxproj` x64 Release: 0 errors.
+- Full solution `Thetis_VS2026.sln` x64 Release: 0 errors, ~70 warnings.
+- `dumpbin -exports`: all five functions are present in `wdsp.dll`.
+- `Thetis.exe` starts and runs without crashing.
+
+---
+
+## 2026-07-07 — WDSP 2.00 integration completed (Q-factor EQ/CFCOMP ported)
+
+### Summary
+- Updated WDSP sources to version 2.00.
+- Ported Thetis-specific patches: pixel_ref, CBL position, NR3/NR4.
+- Adapted P/Invoke signatures for WDSP 2.00 (`GetPSDisp` 12 args, removed obsolete PS functions).
+- Ported Q-factor parametric EQ and CFCOMP from the MW0LGE Thetis patch to the WDSP 2.00 NURBS architecture.
+- Added `Yurij_eu2av` markers to modified C/C#/project files.
+
+### Details
+
+#### WDSP 2.00 source replacement
+- Replaced `Project Files/Source/wdsp/*` with WDSP 2.00 sources.
+- Added new files to `wdsp.vcxproj`: `extrapolate`, `nurbs*`, `phrot`, `reshb`, `snoop`, `wbfm`.
+- Updated `Versions.cs` `_WDSP_VERSION` to `2000`.
+
+#### Thetis patches ported
+- `analyzer.c/h`: restored `SetPixelRef`, `GetPixels(..., double* pixel_ref)`, `PixelRefSection`.
+- `cblock.c/h`: restored `position` parameter and `SetRXACBLPosition`.
+- `rnnr.c/h`, `sbnr.c/h`: integrated into `RXA.c/h` and `comm.h`; extended `RXAbp1Check`.
+
+#### P/Invoke adaptations
+- `dsp.cs`: `GetPSDisp` 12 params; EQ/CFCOMP signatures with optional Q; removed obsolete PS imports.
+- `PSForm.cs`, `AmpView.cs`: removed obsolete PS calls; updated `GetPSDisp`.
+- `eqform.cs`, `frmCFCConfig.cs`, `setup.cs`: updated EQ/CFCOMP call sites.
+
+#### Q-factor parametric EQ/CFCOMP port
+- `eq.c/h`: added `Q` parameter to `eq_impulse` and `SetRXAEQProfile`/`SetTXAEQProfile`; Gaussian-blend Q path is active when `Q != NULL`, legacy linear/NURBS path when `Q == NULL`.
+- `cfcomp.c/h`: added optional `Qg`/`Qe` to `SetTXACFCOMPprofile`; Gaussian-blend Q path in `calc_compG`/`calc_compE`.
+- `fmsq.c`: updated `eq_impulse` calls for the new signature.
+- C# call sites pass Q arrays when parametric mode is enabled, otherwise `NULL`.
+
+### Known limitations
+- Win32 (x86) build: `rnnoise.lib`/`specbleach.lib` are only available for x64. The x86 build requires adding x86 NR binaries or conditionally disabling NR3/NR4.
+
+### Build status
+- `wdsp.vcxproj` x64 Release: 0 errors.
+- Full solution `Thetis_VS2026.sln` x64 Release: 0 errors, ~70 warnings.
+- `dumpbin /exports`: all required imports present.
+- `Thetis.exe` starts and runs without crash.
 
 ---
 
