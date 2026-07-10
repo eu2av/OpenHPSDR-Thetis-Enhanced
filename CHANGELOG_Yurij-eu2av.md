@@ -309,7 +309,7 @@
 - Updated WDSP sources to version 2.00.
 - Ported Thetis-specific patches: pixel_ref, CBL position, NR3/NR4.
 - Adapted P/Invoke signatures for WDSP 2.00 (`GetPSDisp` 12 args, removed obsolete PS functions).
-- Ported Q-factor parametric EQ and CFCOMP from the MW0LGE Thetis patch to the WDSP 2.00 NURBS architecture.
+- Ported Q-factor parametric EQ and CFCOMP from the upstream Thetis patch to the WDSP 2.00 NURBS architecture.
 - Added `Yurij_eu2av` markers to modified C/C#/project files.
 
 ### Details

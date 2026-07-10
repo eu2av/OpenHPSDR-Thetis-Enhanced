@@ -8,7 +8,6 @@ Please report any issue over on [GitHub here](https://github.com/ramdor/Thetis/i
 
 ## Join us on Discord : [Click Here](https://discord.gg/6fHCRKnDc9)
 
-This version, v2.10.3.14, will be the last version released publicly by MW0LGE - Richard Samphire.
 This repo will no longer be updated or monitored.
 
 EDIT: actually v2.10.3.15 will be the last ;)
@@ -346,7 +345,7 @@ with this meter
 - [add] font colour added to button boxes (except for antenna box)
 - [add] click colour added to button boxes (default orange)
 - [add] warning shown in Linearity form if SetPk is different to that expected for the hardware
-- [add] added Thetis bespoke input TCI command spot_simulate_click which simulates a user clicking on a spot in the spectrum. It causes a clicked_on_spot message to go out via TCI. Example test input msg, spot_simulate_click:MW0LGE,3750000;
+- [add] added Thetis bespoke input TCI command spot_simulate_click which simulates a user clicking on a spot in the spectrum. It causes a clicked_on_spot message to go out via TCI. Example test input msg, spot_simulate_click:CALLSIGN,3750000;
 - [add] added command line option, -noinstancewarn   so that no warning is shown if other instances are running. Use -help in a console window to get more info
 - [add] Anvelina-Pro3 profile added to Thetis - N1GP
 - [add] new filter item that will view the passband
