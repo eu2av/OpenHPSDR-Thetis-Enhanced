@@ -464,6 +464,12 @@
               />
 		</Component>
 		<Component Guid="*">
+			<File Id="System.Resources.ExtensionsDLL"
+				  Source="$(var.FilesPath)System.Resources.Extensions.dll"
+				  KeyPath="yes"
+              />
+		</Component>
+		<Component Guid="*">
 			<File Id="System.Text.Encoding.CodePagesDLL"
 				  Source="$(var.FilesPath)System.Text.Encoding.CodePages.dll"
 				  KeyPath="yes"
@@ -490,6 +496,12 @@
 		<Component Guid="*">
 			<File Id="System.Drawing.CommonDLL"
 				  Source="$(var.FilesPath)System.Drawing.Common.dll"
+				  KeyPath="yes"
+              />
+		</Component>
+		<Component Guid="*">
+			<File Id="System.Formats.NrbfDLL"
+				  Source="$(var.FilesPath)System.Formats.Nrbf.dll"
 				  KeyPath="yes"
               />
 		</Component>
@@ -614,8 +626,26 @@
               />
 		</Component>
 		<Component Guid="*">
+			<File Id="Microsoft.Bcl.HashCodeDLL"
+				  Source="$(var.FilesPath)Microsoft.Bcl.HashCode.dll"
+				  KeyPath="yes"
+              />
+		</Component>
+		<Component Guid="*">
+			<File Id="Microsoft.Bcl.MemoryDLL"
+				  Source="$(var.FilesPath)Microsoft.Bcl.Memory.dll"
+				  KeyPath="yes"
+              />
+		</Component>
+		<Component Guid="*">
 			<File Id="Microsoft.Extensions.DependencyInjection.AbstractionsDLL"
 				  Source="$(var.FilesPath)Microsoft.Extensions.DependencyInjection.Abstractions.dll"
+				  KeyPath="yes"
+              />
+		</Component>
+		<Component Guid="*">
+			<File Id="Microsoft.NET.StringToolsDLL"
+				  Source="$(var.FilesPath)Microsoft.NET.StringTools.dll"
 				  KeyPath="yes"
               />
 		</Component>
@@ -640,6 +670,12 @@
 		<Component Guid="*">
 			<File Id="System.Linq.AsyncDLL"
 				  Source="$(var.FilesPath)System.Linq.Async.dll"
+				  KeyPath="yes"
+              />
+		</Component>
+		<Component Guid="*">
+			<File Id="System.Linq.AsyncEnumerableDLL"
+				  Source="$(var.FilesPath)System.Linq.AsyncEnumerable.dll"
 				  KeyPath="yes"
               />
 		</Component>
