@@ -60,7 +60,6 @@
             "N1GP, Rick (Firmware related changes)",
             "W4WMT, Bryan (Resampler, VAC & cmASIO)",
             "MI0BOT, Reid (Hermes Lite 2)",
-            "MW0LGE, Richie (UI & various)",
             "W5WC, Doug (UI, ChannelMaster, various & Thetis naming)",
             "W2PA, Chris (QSK & MIDI)",
             "WD5Y, Joe (UI tweaks and fixes)",

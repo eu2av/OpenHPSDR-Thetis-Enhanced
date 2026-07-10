@@ -1,5 +1,5 @@
 // 
-//Auto Generated Pre-Build event MW0LGE 
+//Auto Generated Pre-Build event 
 // 
 using System; 
 namespace Thetis 
